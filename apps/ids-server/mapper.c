@@ -122,6 +122,13 @@ struct Neighbor {
    * The rank of the node
    */
   rpl_rank_t rank;
+  //dharmini
+ /**
+ * etx of the node and neighboring nodes
+ */
+ rpl_metric_container_t mc;
+//struct rpl_metric_container mc;
+
 };
 
 /**
@@ -174,6 +181,12 @@ struct Node {
    * between analysis for different checks
    */
   uint8_t status;
+  //dharmini
+ /**
+ * etx of the node and neighboring nodes
+ */
+// struct rpl_metric_container mc;
+ rpl_metric_container_t mc;
 };
 
 /**
@@ -272,10 +285,12 @@ print_subtree(struct Node *node, int depth)
     return;
   }
   node->visited = 1;
-
-  printf(" (t: %d, p: %x, r: %d) ", node->timestamp, node->parent_id, node->rank);
+  //dharmini
+ // printf(" (t: %d, p: %x, r: %d ) ", node->timestamp, node->parent_id, node->rank);
+  printf(" (t: %d, p: %x, r: %d e: %d) ", node->timestamp, node->parent_id, node->rank, node->mc.obj.etx);
 
   printf("    {");
+//  printf("dharmini");
 
   for(i = 0; i < node->neighbors; ++i) {
     uip_debug_ipaddr_print(node->neighbor[i].node->ip);
@@ -342,7 +357,7 @@ tcpip_handler()
   PRINT6ADDR(id->ip);
   PRINTF("\n");
 
-  // RPL Instance ID | DODAG ID | DAG Version | Timestamp
+  // RPL Instance ID | DODAG ID | DAG Version | Timestamp | 
 
   MAPPER_GET_PACKETDATA(rpl_instance_id, appdata);
 
@@ -367,8 +382,13 @@ tcpip_handler()
     PRINTF("got %d while expecting %d\n", timestamp_recieved, timestamp);
     return;
   }
-
+  
   id->timestamp = timestamp_recieved;
+   
+ //dharmini
+  //Get the etx value of the neighbors
+ // MAPPER_GET_PACKETDATA(id->mc.obj.etx, appdata);
+
 
   // Rank
   MAPPER_GET_PACKETDATA(id->rank, appdata);
@@ -398,7 +418,11 @@ tcpip_handler()
 
     if(parent->id == neighbor_id)
       id->parent_id = i;
+
+    //dharmini
+ MAPPER_GET_PACKETDATA(id->mc.obj.etx, appdata);
   }
+  
   id->neighbors = neighbors;
 }
 
@@ -455,10 +479,10 @@ map_network()
 
   if (uip_ds6_routing_table[working_host].isused &&
       timestamp_outdated(node->timestamp, MAPPING_RECENT_WINDOW)) {
-    // RPL Instance ID | DAG ID (compressed, uint16_t) | DAG Version | timestamp
+    // RPL Instance ID | DAG ID (compressed, uint16_t) | DAG Version | timestamp |etx
     static char data[sizeof(current_rpl_instance_id) +
       sizeof(uint16_t) + sizeof(current_dag->version) +
-      sizeof(timestamp)];
+      sizeof(timestamp)+ sizeof(node->mc.obj.etx)];
     void *data_p = data;
     uint16_t tmp;
 
@@ -467,6 +491,8 @@ map_network()
     MAPPER_ADD_PACKETDATA(data_p, tmp);
     MAPPER_ADD_PACKETDATA(data_p, current_dag->version);
     MAPPER_ADD_PACKETDATA(data_p, timestamp);
+    MAPPER_ADD_PACKETDATA(data_p, node->mc.obj.etx);
+    
 
     PRINTF("sending data to: %2d ", working_host);
     PRINT6ADDR(&uip_ds6_routing_table[working_host].ipaddr);
@@ -485,7 +511,7 @@ map_network()
 }
 
 /**
- * Check that all information provided by nodes correspond with the information
+ * Check thiat all information provided by nodes correspond with the information
  * provided by their parent
  */
 int
