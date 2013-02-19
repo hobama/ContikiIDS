@@ -755,13 +755,14 @@ PROCESS_THREAD(mapper, ev, data)
   network[0].ip = &uip_ds6_get_global(ADDR_PREFERRED)->ipaddr;
   network[0].id = compress_ipaddr_t(network[0].ip);
   ++node_index;
+  //dharmini 
+  printf("n %d",node_index);
 
   while(1) {
     PROCESS_YIELD();
     if(ev == tcpip_event) {
       tcpip_handler();
     } else if(etimer_expired(&map_timer)) {
-
       // Map the next DAG.
       if(working_host == 0 && etimer_expired(&host_timer)) {
 #if (DEBUG) & DEBUG_PRINT
