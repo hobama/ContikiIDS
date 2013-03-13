@@ -294,7 +294,7 @@ print_subtree(struct Node *node, int depth)
 
   for(i = 0; i < node->neighbors; ++i) {
     uip_debug_ipaddr_print(node->neighbor[i].node->ip);
-    printf(" (%d) ,", node->neighbor[i].rank);
+    printf("%d %d", node->neighbor[i].rank,node->neighbor[i].node->mc.obj.etx);
   }
   printf("}\n");
 
@@ -826,4 +826,3 @@ PROCESS_THREAD(mapper, ev, data)
 
   PROCESS_END();
 }
-/*---------------------------------------------------------------------------*/
