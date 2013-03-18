@@ -241,7 +241,7 @@ add_node(uint16_t id)
 
   if(node_index >= NETWORK_NODES) {     // Out of memory
     PRINTF("Out of memory\n");
-    return NULL;
+  return NULL;
   }
 
   int i;
@@ -294,7 +294,7 @@ print_subtree(struct Node *node, int depth)
 
   for(i = 0; i < node->neighbors; ++i) {
     uip_debug_ipaddr_print(node->neighbor[i].node->ip);
-    printf("%d %d", node->neighbor[i].rank,node->neighbor[i].node->mc.obj.etx);
+    printf("r :%d e: %d", node->neighbor[i].rank,node->neighbor[i].node->mc.obj.etx);
   }
   printf("}\n");
 
