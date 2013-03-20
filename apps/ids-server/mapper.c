@@ -238,6 +238,7 @@ add_node(uint16_t id)
 
   if(node != NULL)
     return node;
+   printf("node _ index : %d", node_index);
 
   if(node_index >= NETWORK_NODES) {     // Out of memory
     PRINTF("Out of memory\n");
@@ -756,7 +757,7 @@ PROCESS_THREAD(mapper, ev, data)
   network[0].id = compress_ipaddr_t(network[0].ip);
   ++node_index;
   //dharmini 
-  printf("n %d",node_index);
+  printf("nodes_index %d\n",node_index);
 
   while(1) {
     PROCESS_YIELD();
