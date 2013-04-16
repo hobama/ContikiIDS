@@ -53,7 +53,8 @@
 #include "net/firewall.h"
 #endif
 
-#define DEBUG DEBUG_NONE
+//#define DEBUG DEBUG_NONE
+#define DEBUG DEBUG_FULL
 #include "net/uip-debug.h"
 
 #if UIP_LOGGING
