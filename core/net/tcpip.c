@@ -54,7 +54,7 @@
 #endif
 
 //#define DEBUG DEBUG_NONE
-#define DEBUG DEBUG_FULL
+#define DEBUG DEBUG_PRINT
 #include "net/uip-debug.h"
 
 #if UIP_LOGGING

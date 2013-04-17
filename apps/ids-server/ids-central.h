@@ -3,7 +3,7 @@
 
 #include "ids-common.h"
 
-#define NETWORK_NODES 18
+#define NETWORK_NODES 8
 #define NETWORK_DENSITY 8 // The number of neighbors for each node
 #define MAPPING_RECENT_WINDOW 1 // Acceptably old information, in MAPPING_INTERVAL units
 

@@ -6,10 +6,20 @@
 #define SMALL_FILTERS 10
 #define GLOBAL_FILTERS 10
 
-#define UIP_IP_BUF ((struct uip_ip_hdr *)&uip_buf[UIP_LLH_LEN])
+//#define UIP_IP_BUF ((struct uip_ip_hdr *)&uip_buf[UIP_LLH_LEN])
 
-#define FILTER_UNUSED 0
-#define FILTER_USED 1
+//#define FILTER_UNUSED 0
+//#define FILTER_USED 1
+
+#define UIP_IP_BUF ((struct uip_ip_hdr *)&uip_buf[UIP_LLH_LEN])
+#define UIP_UDP_BUF  ((struct uip_udp_hdr *)&uip_buf[uip_l2_l3_hdr_len])
+#define UIP_ICMP_BUF ((struct uip_icmp_hdr *)&uip_buf[uip_l2_l3_hdr_len])
+
+
+  uint8_t *appdata;
+  uint16_t destination;
+  uip_ipaddr_t source;
+
 
 /**
  * A structure to describe filters towards specific destinations

@@ -8,9 +8,13 @@
 
 #include "../apps/ids-common/ids-common.h"
 
-// uint16_t compress_ipaddr_t(uip_ipaddr_t * ipaddr) {
-  // return ipaddr->u16[7];
-// }
+void *appdata;
+uint16_t destination;
+uip_ipaddr_t source;
+
+uint16_t compress_ipaddr_t(uip_ipaddr_t * ipaddr) {
+  return ipaddr->u16[7];
+ }
 
 int firewall_valid_packet(void) {
   int i;
