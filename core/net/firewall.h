@@ -20,7 +20,7 @@
 #define UIP_UDP_BUF  ((struct uip_udp_hdr *)&uip_buf[uip_l2_l3_hdr_len])
 #define UIP_ICMP_BUF ((struct uip_icmp_hdr *)&uip_buf[uip_l2_l3_hdr_len])
 //dharmini
-uint8_t *uip_next_hdr;
+//uint8_t *uip_next_hdr;
 //uint8_t *appdata;
 //uint16_t destination;
 //uip_ipaddr_t source;
