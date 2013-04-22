@@ -135,7 +135,7 @@ coap_send_transaction(coap_transaction_t *t)
       /* Timed out. */
       PRINTF("Timeout\n");
 
-      packet_lost(&t->addr);
+     // packet_lost(&t->addr);
 
       restful_response_handler callback = t->callback;
       void *callback_data = t->callback_data;
