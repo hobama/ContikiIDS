@@ -31,6 +31,8 @@ struct individual_ip_record_table_state
 	uint8_t number_of_succesful_connections;
 	uint8_t number_of_bad_reported_connections;
 	uint8_t visited_address;
+        uint8_t connection_status;
+        struct individual_ip_record_table_state *individual_ip_record_table_states;
 };
 
 struct recorded_state_table
@@ -43,25 +45,32 @@ struct recorded_state_table
         struct individual_ip_record_table_state *invidualconnections[incoming_allowed_connections];
 	int connection;
 	uint16_t id;
+        struct recorded_state_table *state_table;
+        LIST_STRUCT(good_connection);
+	LIST_
 };
 
-uint8_t recorded_address;
-uint8_t packet_count=0;
+static bool    already_visited_address;
+static uint8_t packet_count=0;
+static struct  recorded_state_table stored_connections[incoming_allowed_connections];
+static struct  individual_ip_record_table_state invidual_entry [incoming_allowed_connections];
+static int counter_used;
 
+int packet_matching() 
+{
+   
 int i,j;
 
-static struct recorded_state_table stored_connections[incoming_allowed_connections];
-static struct individual_ip_record_table_state invidual_entry [incoming_allowed_connections];
-
-     switch(UIP_IP_BUF->proto)
+for(i=0;i<=incoming_allowed_connections;++i)
+{
+    switch(UIP_IP_BUF->proto)
      {
         case UIP_PROTO_UDP: 
 
               printf("proto:UDP %d \n",UIP_IP_BUF->proto);
               printf("\n src: \n");
               uip_debug_ipaddr_print(&UIP_IP_BUF->srcipaddr);
-             // PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
-              printf("\t");
+             // PRINT6ADDR(&UIP_IP_BUF->srcipaddr); // printf("\t");
               printf("\ndestination :\n");
               PRINT6ADDR(&UIP_IP_BUF->destipaddr);      
               if (uip_ipaddr_cmp(&UIP_IP_BUF->srcipaddr,&UIP_IP_BUF->destipaddr))
@@ -108,6 +117,7 @@ static struct individual_ip_record_table_state invidual_entry [incoming_allowed_
         printf("\n type %d \n ",UIP_ICMP_BUF->type);
         break;
 }
+}
 
 //for(i=0; i<incoming_allowed_connections;++i)
 //{
@@ -115,11 +125,11 @@ static struct individual_ip_record_table_state invidual_entry [incoming_allowed_
 //}
 
 int firewall_valid_packet(void) {
-//int i,j;
+int i,j;
  // for (i = 0; i < GLOBAL_FILTERS; ++i) 
 
 
-/* for(i = 0; i <incoming_allowed_connections ; ++i)
+ for(i = 0; i <incoming_allowed_connections ; ++i)
 {
      
      switch(UIP_IP_BUF->proto)
@@ -176,7 +186,7 @@ int firewall_valid_packet(void) {
         printf("\n");
         printf("\n type %d \n ",UIP_ICMP_BUF->type);
         break;
-}*/
+}
 /*    PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
 	    printf("\n");
 	    printf("proto %d \n",UIP_IP_BUF->proto);
