@@ -10,8 +10,12 @@
 
 #define SMALL_FILTERS 10
 #define GLOBAL_FILTERS 10
+#define incoming_allowed_connections 10
+#define successful_connections 10
+#define dropped_packets 10
 
-//#define UIP_IP_BUF ((struct uip_ip_hdr *)&uip_buf[UIP_LLH_LEN])
+
+// UIP_IP_BUF ((struct uip_ip_hdr *)&uip_buf[UIP_LLH_LEN])
 
 #define FILTER_UNUSED 0
 #define FILTER_USED 1
