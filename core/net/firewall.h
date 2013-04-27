@@ -3,16 +3,16 @@
 
 #include "net/uip.h"
 //dharmini
-#include "net/uipopt.h"
-#include "net/uip-icmp6.h"
-#include "net/uip-nd6.h"
-#include "net/uip-ds6.h"
+//#include "net/uipopt.h"
+//#include "net/uip-icmp6.h"
+//#include "net/uip-nd6.h"
+//#include "net/uip-ds6.h"
 
 #define SMALL_FILTERS 10
 #define GLOBAL_FILTERS 10
 #define incoming_allowed_connections 10
-#define successful_connections 10
-#define dropped_packets 10
+//#define successful_connections 10
+//#define dropped_packets 7
 
 
 // UIP_IP_BUF ((struct uip_ip_hdr *)&uip_buf[UIP_LLH_LEN])
