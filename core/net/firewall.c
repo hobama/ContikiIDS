@@ -9,10 +9,13 @@
 #include "net/uip-nd6.h"
 #include "net/uip-ds6.h"
 #include "net/uip.h"
+#include "contiki-net.h"
 #include "../apps/ids-common/ids-common.h"
 //#include "../apps/er-coap-07/er-coap-07.h" 
-#include "../apps/rest-coap/coap-common.h"
-
+//#include "erbium.h"
+//#include "../apps/rest-coap/coap-common.h"
+//#include "../apps/er-coap-07/er-coap-07-engine.h"
+#include "../apps/erbium/erbium.h"
 /*#define UIP_IP_BUF ((struct uip_ip_hdr *)&uip_buf[UIP_LLH_LEN])
 #define UIP_UDP_BUF  ((struct uip_udp_hdr *)&uip_buf[uip_l2_l3_hdr_len])
 #define UIP_ICMP_BUF ((struct uip_icmp_hdr *)&uip_buf[uip_l2_l3_hdr_len])*/
@@ -23,8 +26,8 @@ uint16_t compress_ipaddr_t(uip_ipaddr_t * ipaddr) {
 
 struct individual_ip_record_table_state
 {
-	uip_ipaddr_t remote_address;
-        uip_ipaddr_t destination_address;
+	uip_ipaddr_t *remote_address;
+        uip_ipaddr_t *destination_address;
         uint16_t remote_port;
         uint16_t destination_port;
        	uint8_t number_of_connections;
@@ -37,8 +40,8 @@ struct individual_ip_record_table_state
 
 struct recorded_state_table
 {
-	uip_ipaddr_t *remote_address;
-	uip_ipaddr_t *local_destination_address;
+	//uip_ipaddr_t *remote_address;
+	//uip_ipaddr_t *local_destination_address;
 	uint16_t remote_port;
 	uint16_t destination_port;
 	uint16_t connection_statemode;
@@ -48,7 +51,7 @@ struct recorded_state_table
 	uint8_t connection_id;//number of conections for that particular address
   //      struct recorded_state_table *state_table;
         LIST_STRUCT(good_connection_sourceaddress);
-	LIST_STRUCT(bad_connection_sourceaddress);
+//	LIST_STRUCT(bad_connection_sourceaddress);
 };
 
 static int    already_visited_address;
@@ -71,7 +74,7 @@ int udp_packet_address_mismatch()
                      }
              }
 
- return 1;
+ return 0;
 }
 
 int udp_source_port_mismatch()
@@ -83,34 +86,39 @@ int udp_source_port_mismatch()
                       printf("invalid port number\n");
                   }
               }
-    return 1;
+    return 0;
 
 }
 
 int packet_matching() 
 {
    int i,j;
-for(i=0;i<=incoming_allowed_connections;++i)
-{
+//already_visited_address=1;
+
+//for(i=0;i<=incoming_allowed_connections;++i)
+//{
    
 //stored_connections[i].individualconnections[i]->number_of_connections=1; 
-
+//while(1)
+//{
+ i=0;
  switch(UIP_IP_BUF->proto)
      {
         case UIP_PROTO_UDP: 
 	
-	      stored_connections[i].remote_address=&UIP_IP_BUF->srcipaddr;
-              stored_connections[i].local_destination_address=&UIP_IP_BUF->destipaddr;
+	     // stored_connections[i].remote_address=&UIP_IP_BUF->srcipaddr;
+             // stored_connections[i].local_destination_address=&UIP_IP_BUF->destipaddr;
 	      stored_connections->individualconnections[i]->number_of_connections=1;
-              stored_connections->individualconnections[i]->remote_address=UIP_IP_BUF->srcipaddr;
-              stored_connections->individualconnections[i]->destination_address=UIP_IP_BUF->destipaddr;
-              already_visited_address=1;        
+              stored_connections->individualconnections[i]->visited_address=1;
+              stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
+              stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;
+        //      already_visited_address=1;        
               printf("proto:UDP %d \n",UIP_IP_BUF->proto);
               printf("\n src:");
               uip_debug_ipaddr_print(&UIP_IP_BUF->srcipaddr);
              // PRINT6ADDR(&UIP_IP_BUF->srcipaddr); // printf("\t");
               printf("\ndestination : ");
-              PRINT6ADDR(&UIP_IP_BUF->destipaddr);     
+               PRINT6ADDR(&UIP_IP_BUF->destipaddr);     
            /* if (uip_ipaddr_cmp(&UIP_IP_BUF->srcipaddr,&UIP_IP_BUF->destipaddr))
               {
                  if(uip_is_addr_loopback(&UIP_IP_BUF->srcipaddr))
@@ -122,17 +130,25 @@ for(i=0;i<=incoming_allowed_connections;++i)
 		
                      }
              }*/
-             if(udp_packet_address_mismatch()) printf("not valid");
+             if(!udp_packet_address_mismatch())
+             {
+               if(!udp_source_port_mismatch())
+		{
+  			 printf("not valid");
+		}
+	     }
 
-             printf("\nsource port no %d ",UIP_UDP_BUF->srcport);  
-              printf("\ndestination port %d \n",UIP_UDP_BUF->destport);
-              if(UIP_UDP_BUF->srcport <1024 && UIP_UDP_BUF->destport == 0)
+              printf("\nsource port no %d ",uip_htons(UIP_UDP_BUF->srcport));  
+              printf("\ndestination port %d \n",uip_htons(UIP_UDP_BUF->destport));
+              stored_connections->individualconnections[i]->remote_port=UIP_UDP_BUF->srcport;
+              stored_connections->individualconnections[i]->destination_port=UIP_UDP_BUF->destport;
+        /*      if(UIP_UDP_BUF->srcport <1024 && UIP_UDP_BUF->destport == 0)
               {
 		if(UIP_UDP_BUF->srcport && UIP_UDP_BUF->destport)
                    {
 		      printf("invalid port number\n");
 	           }
-              }
+              } */
 
             // stored_connections->individualconnections[i]-> 
               if(UIP_UDP_BUF->destport==5683)
@@ -149,19 +165,21 @@ for(i=0;i<=incoming_allowed_connections;++i)
         case UIP_PROTO_ICMP6:
       
         printf("proto:ICMP %d \n",UIP_IP_BUF->proto);
-        printf("\n src\n");
+        printf("\n src");
         PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
-        printf("\ndestination\n");
-        printf("\n");
+        printf("\ndestination ");
+      //  printf("\n");
         PRINT6ADDR(&UIP_IP_BUF->destipaddr);
-        printf("\n");
+       // printf("\n");
         printf("\n type %d \n ",UIP_ICMP_BUF->type);
         break;
     	
      }  
-
-   }
+   ++i; 
+   // }
+   return 0;
 }
+//}
 
 //for(i=0; i<incoming_allowed_connections;++i)
 //{
@@ -170,7 +188,16 @@ for(i=0;i<=incoming_allowed_connections;++i)
 
 int firewall_valid_packet(void) 
 {
-		int i,j;
+	
+//   if(UIP_IP_BUF->proto == UIP_PROTO_NONE)
+   // {
+  // return;
+
+
+
+
+
+	int i,j;
  // for (i = 0; i < GLOBAL_FILTERS; ++i) 
 
 
@@ -185,7 +212,7 @@ int firewall_valid_packet(void)
               printf("\nsrc: ");
              // uip_debug_ipaddr_print(&UIP_IP_BUF->srcipaddr);
               PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
-              printf("source %x",UIP_IP_BUF->srcipaddr);
+              printf("source %x",&UIP_IP_BUF->srcipaddr);
  //             printf("\t");
               printf("\ndestination :");
               PRINT6ADDR(&UIP_IP_BUF->destipaddr);      
@@ -200,9 +227,11 @@ int firewall_valid_packet(void)
 		
                      }
              }
-              
-              printf("\nsource port no %d\n",UIP_UDP_BUF->srcport);  
-              printf("\ndestination port %d \n",UIP_UDP_BUF->destport);
+               printf("\nsource port no %d ",uip_htons(UIP_UDP_BUF->srcport));
+              printf("\ndestination port %d \n",uip_htons(UIP_UDP_BUF->destport));
+
+//              printf("\nsource port no %d\n",UIP_UDP_BUF->srcport);  
+  //            printf("\ndestination port %d \n",UIP_UDP_BUF->destport);
               if(UIP_UDP_BUF->srcport <1024 && UIP_UDP_BUF->destport == 0)
               {
 		if(UIP_UDP_BUF->srcport && UIP_UDP_BUF->destport)
@@ -210,7 +239,7 @@ int firewall_valid_packet(void)
 		      printf("invalid port number\n");
 	           }
               }
-              if(UIP_UDP_BUF->destport==5683)
+              if(UIP_UDP_BUF->destport==13078)
               {
                 printf("CoAP Request");
               
