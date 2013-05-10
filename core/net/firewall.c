@@ -133,6 +133,8 @@ int firewall_valid_packet(void)
 	    				stored_connections->individualconnections[i]->connection_status=0;
 					stored_connections->connection_statemode=0;
 					  //TODO : add them in the blacklisted list
+
+						//TODO check the udp data length and checksum for all of the three
 					  //goto : drop
 	      				return; 
 				}
