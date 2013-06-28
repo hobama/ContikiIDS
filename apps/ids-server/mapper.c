@@ -288,14 +288,14 @@ print_subtree(struct Node *node, int depth)
   node->visited = 1;
   //dharmini
  // printf(" (t: %d, p: %x, r: %d ) ", node->timestamp, node->parent_id, node->rank);
-  printf(" (t: %d, p: %x, r: %d e: %d) ", node->timestamp, node->parent_id, node->rank, node->mc.obj.etx);
+  printf(" (t: %d, p: %x, r: %d,e: %d) ", node->timestamp, node->parent->parent_id, node->rank, node->mc.obj.etx);
 
   printf("    {");
 //  printf("dharmini");
 
   for(i = 0; i < node->neighbors; ++i) {
     uip_debug_ipaddr_print(node->neighbor[i].node->ip);
-    printf("r :%d e: %d", node->neighbor[i].rank,node->neighbor[i].node->mc.obj.etx);
+    printf("( r :%d,  e: %d )" , node->neighbor[i].rank,node->neighbor[i].node->mc.obj.etx);
   }
   printf("}\n");
 
