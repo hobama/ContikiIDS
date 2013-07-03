@@ -36,8 +36,8 @@ struct recorded_state_table
 
 static int    already_visited_address;
 static unsigned int packet_count=0;
-/*static struct  recorded_state_table stored_connections[incoming_allowed_connections];
-static struct  individual_ip_record_table_state invidual_entry [incoming_allowed_connections];*/
+static struct  recorded_state_table stored_connections[incoming_allowed_connections];
+static struct  individual_ip_record_table_state invidual_entry [incoming_allowed_connections];
 //static int counter_used;
 
 
@@ -94,7 +94,7 @@ int firewall_valid_packet(void)
        	return;
 
 
-/*	if(stored_connections->individualconnections[i]->visited_address)
+	if(stored_connections->individualconnections[i]->visited_address)
 	{
 		if(already_visited_address)
 			{
@@ -139,7 +139,7 @@ int firewall_valid_packet(void)
               printf("\nsource port no %d ",uip_htons(UIP_UDP_BUF->srcport));  
               printf("\ndestination port %d \n",uip_htons(UIP_UDP_BUF->destport));
             
-            UIP_UDP_BUF->udpchksum = ~(uip_udpchksum());
+  //          UIP_UDP_BUF->udpchksum = ~(uip_udpchksum());
   	      
 	      stored_connections->individualconnections[i]->remote_port=uip_htons(UIP_UDP_BUF->srcport);
               stored_connections->individualconnections[i]->destination_port=uip_htons(UIP_UDP_BUF->destport);
@@ -158,7 +158,7 @@ int firewall_valid_packet(void)
 	      case 4443:
 	      break;	
               }
- 
+
              /* if(stored_connections->individualconnections[i]->destination_port=uip_htons(UIP_UDP_BUF->destport)= 5683)
               {
                  
