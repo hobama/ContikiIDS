@@ -34,7 +34,6 @@ tcpip_handler(void)
     uint16_t dag_id;
     uint8_t version;
     uint16_t etx;
-
     PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
     PRINTF("the address inserted was \n");
    /* //dharmini PRINTF("DEBUG %s:%d\n",__FUNCTION__,__LINE__);*/
@@ -44,9 +43,9 @@ tcpip_handler(void)
     MAPPER_GET_PACKETDATA(dag_id, in_data);
     MAPPER_GET_PACKETDATA(version, in_data);
     MAPPER_GET_PACKETDATA(timestamp, in_data);
-   // MAPPER_GET_PACKETDATA(etx, in_data);
+    MAPPER_GET_PACKETDATA(etx, in_data);
     //dharmini
-   printf("dharmini-");
+    //printf("dharmini-");
    // PRINTF("DEBUG %s:%d\n",__FUNCTION__,__LINE__);
     
     // Go through all RPL instances
@@ -68,20 +67,20 @@ tcpip_handler(void)
             // Dag Ver.  (uint8_t) | Timestamp (uint8_t) | Rank (uint16_t) |etx(uint16_t)
             // Parent IP (uint16_t) | #neighbors (uint16_t) | NEIGHBORS
             //
-            // NEIGHBORS = Neighbor ID (uint16_t) | Neighbor rank (uint16_t) | Neighbor etx
+            // NEIGHBORS = Neighbor ID (uint16_t) | Neighbor rank (uint16_t)
 
             // calculate size of out_data
             int outdata_size =
               sizeof(uint16_t) + sizeof(instance_id) + sizeof(dag_id) + sizeof(version) +
               sizeof(version) + sizeof(timestamp) + sizeof(rpl_rank_t) +
-              sizeof(uint16_t) + sizeof(uint16_t);
+              sizeof(uint16_t) + sizeof(uint16_t)+sizeof(etx);
 
             rpl_parent_t *p;
             for(p = list_head(instance_table[i].dag_table[j].parents);
                 p != NULL; p = list_item_next(p)) {
               if (p->rank == -1)
                 continue;
-              outdata_size += sizeof(uint16_t) + sizeof(rpl_rank_t) + sizeof(etx);
+              outdata_size += sizeof(uint16_t) + sizeof(rpl_rank_t)+sizeof(etx);
             }
 
             unsigned char out_data[outdata_size];
@@ -95,15 +94,13 @@ tcpip_handler(void)
             tmp_id = compress_ipaddr_t(myip);
             MAPPER_ADD_PACKETDATA(out_data_p, tmp_id);
      
-            // RPL Instance ID | DODAG ID | DODAG Version Number | Timestamp | etx
+            // RPL Instance ID | DODAG ID | DODAG Version Number | Timestamp
             MAPPER_ADD_PACKETDATA(out_data_p, instance_id);
             MAPPER_ADD_PACKETDATA(out_data_p, dag_id);
             MAPPER_ADD_PACKETDATA(out_data_p, version);
             MAPPER_ADD_PACKETDATA(out_data_p, timestamp);
-//dharmini// 
- 	   //  etx=instance_table[i].dag_table[j].instance->mc.obj.etx;
-            
-            // MAPPER_ADD_PACKETDATA(out_data_p,etx);
+//dharmini//
+            MAPPER_ADD_PACKETDATA(out_data_p, etx);
 
             // My rank
             MAPPER_ADD_PACKETDATA(out_data_p, instance_table[i].dag_table[j].rank);
@@ -133,11 +130,6 @@ tcpip_handler(void)
 
               PRINT6ADDR(&p->addr);
               PRINTF(" got rank %d\n", p->rank);
-           
-             etx=(uint16_t)instance_table[i].dag_table[j].instance->mc.obj.etx;
-
-             MAPPER_ADD_PACKETDATA(out_data_p,etx);
-
             }
             PRINTF("%d neighbors\n", *neighbors);
         //    printf("dharmini");

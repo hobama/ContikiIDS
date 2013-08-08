@@ -48,6 +48,9 @@
 #include "net/rpl/rpl-private.h"
 
 #define DEBUG DEBUG_NONE
+
+//#define DEBUG DEBUG_PRINT
+
 #include "net/uip-debug.h"
 
 #include <limits.h>
@@ -70,25 +73,25 @@ rpl_verify_header(int uip_ext_opt_offset)
   uint8_t sender_closer;
 
   if(UIP_EXT_HDR_OPT_RPL_BUF->opt_len != RPL_HDR_OPT_LEN) {
-    PRINTF("RPL: Bad header option! (wrong length)\n");
+//    PRINTF("RPL: Bad header option! (wrong length)\n");
     return 1;
   }
 
   if(UIP_EXT_HDR_OPT_RPL_BUF->flags & RPL_HDR_OPT_FWD_ERR) {
-    PRINTF("RPL: Forward error!\n");
+  //  PRINTF("RPL: Forward error!\n");
     /* We should try to repair it, not implemented for the moment */
     return 2;
   }
 
   instance = rpl_get_instance(UIP_EXT_HDR_OPT_RPL_BUF->instance);
   if(instance == NULL) {
-    PRINTF("RPL: Unknown instance: %u\n",
-           UIP_EXT_HDR_OPT_RPL_BUF->instance);
+    //PRINTF("RPL: Unknown instance: %u\n",
+      //     UIP_EXT_HDR_OPT_RPL_BUF->instance);
     return 1;
   }
 
   if(!instance->current_dag->joined) {
-    PRINTF("RPL: No DAG in the instance\n");
+//    PRINTF("RPL: No DAG in the instance\n");
     return 1;
   }
 
@@ -98,10 +101,14 @@ rpl_verify_header(int uip_ext_opt_offset)
   }
 
   PRINTF("RPL: Packet going %s\n", down == 1 ? "down" : "up");
+  printf("RPL: Packet going %s\n", down == 1 ? "down" : "up");
 
   sender_closer = UIP_EXT_HDR_OPT_RPL_BUF->senderrank < instance->current_dag->rank;
-  if((down && !sender_closer) || (!down && sender_closer)) {
-    PRINTF("RPL: Loop detected - senderrank: %d my-rank: %d sender_closer: %d\n",
+
+   printf("UIP_EXT_HDR_OPT_RPL_BUF->senderrank %u ,instance->current_dag->rank %u");
+  PRINTF("UIP_EXT_HDR_OPT_RPL_BUF->senderrank %u ,instance->current_dag->rank %u,sender_closer %u", UIP_EXT_HDR_OPT_RPL_BUF->senderrank,instance->current_dag->rank,sender_closer);
+   if((down && !sender_closer) || (!down && sender_closer)) {
+   PRINTF("RPL: Loop detected - senderrank: %d my-rank: %d sender_closer: %d\n",
 	   UIP_EXT_HDR_OPT_RPL_BUF->senderrank, instance->current_dag->rank,
 	   sender_closer);
     if(UIP_EXT_HDR_OPT_RPL_BUF->flags & RPL_HDR_OPT_RANK_ERR) {
@@ -123,6 +130,8 @@ static void
 set_rpl_opt(unsigned uip_ext_opt_offset)
 {
   uint8_t temp_len;
+
+  PRINTF("RPL:set rpl option\n");
 
   memmove(UIP_HBHO_NEXT_BUF, UIP_EXT_BUF, uip_len - UIP_IPH_LEN);
   memset(UIP_HBHO_BUF, 0, RPL_HOP_BY_HOP_LEN);
@@ -158,20 +167,20 @@ rpl_update_header_empty(void)
   switch(UIP_IP_BUF->proto) {
   case UIP_PROTO_HBHO:
     if(UIP_HBHO_BUF->len != RPL_HOP_BY_HOP_LEN - 8) {
-      PRINTF("RPL: Non RPL Hop-by-hop options support not implemented\n");
+    //  PRINTF("RPL: Non RPL Hop-by-hop options support not implemented\n");
       uip_ext_len = last_uip_ext_len;
       return;
     }
     instance = rpl_get_instance(UIP_EXT_HDR_OPT_RPL_BUF->instance);
     if(instance == NULL || !instance->used || !instance->current_dag->joined) {
-      PRINTF("RPL: Unable to add hop-by-hop extension header: incorrect instance\n");
+      //PRINTF("RPL: Unable to add hop-by-hop extension header: incorrect instance\n");
       return;
     }
     break;
   default:
-    PRINTF("RPL: No hop-by-hop option found, creating it\n");
+   // PRINTF("RPL: No hop-by-hop option found, creating it\n");
     if(uip_len + RPL_HOP_BY_HOP_LEN > UIP_BUFSIZE) {
-      PRINTF("RPL: Packet too long: impossible to add hop-by-hop option\n");
+     // PRINTF("RPL: Packet too long: impossible to add hop-by-hop option\n");
       uip_ext_len = last_uip_ext_len;
       return;
     }
@@ -182,12 +191,12 @@ rpl_update_header_empty(void)
 
   switch(UIP_EXT_HDR_OPT_BUF->type) {
   case UIP_EXT_HDR_OPT_RPL:
-    PRINTF("RPL: Updating RPL option\n");
+  //  PRINTF("RPL: Updating RPL option\n");
     UIP_EXT_HDR_OPT_RPL_BUF->senderrank=instance->current_dag->rank;
     uip_ext_len = last_uip_ext_len;
     return;
   default:
-    PRINTF("RPL: Multi Hop-by-hop options not implemented\n");
+//    PRINTF("RPL: Multi Hop-by-hop options not implemented\n");
     uip_ext_len = last_uip_ext_len;
     return;
   }
@@ -206,20 +215,23 @@ rpl_update_header_final(uip_ipaddr_t *addr)
 
   if(UIP_IP_BUF->proto == UIP_PROTO_HBHO) {
     if(UIP_HBHO_BUF->len != RPL_HOP_BY_HOP_LEN - 8) {
-      PRINTF("RPL: Non RPL Hop-by-hop options support not implemented\n");
+     PRINTF("RPL: Non RPL Hop-by-hop options support not implemented\n");
       uip_ext_len = last_uip_ext_len;
       return 0;
     }
 
     if(UIP_EXT_HDR_OPT_BUF->type == UIP_EXT_HDR_OPT_RPL) {
       if(UIP_EXT_HDR_OPT_RPL_BUF->senderrank == 0) {
-        PRINTF("RPL: Updating RPL option\n");
+        PRINTF("RPL: Updating RPL option in rpl header final\n");
         if(default_instance == NULL || !default_instance->used || !default_instance->current_dag->joined) {
           PRINTF("RPL: Unable to add hop-by-hop extension header: incorrect default instance\n");
           return 1;
         }
         parent = rpl_find_parent(default_instance->current_dag, addr);
         if(parent == NULL || parent != parent->dag->preferred_parent) {
+ 	  printf("RPL PARENT ADDRESS");
+          PRINT6ADDR(&parent->addr);
+          printf("\n");
           UIP_EXT_HDR_OPT_RPL_BUF->flags = RPL_HDR_OPT_DOWN;
         }
         UIP_EXT_HDR_OPT_RPL_BUF->instance = default_instance->instance_id;
@@ -240,7 +252,7 @@ rpl_remove_header(void)
   last_uip_ext_len = uip_ext_len;
   uip_ext_len = 0;
 
-  PRINTF("RPL: Verifying the presence of the RPL header option\n");
+PRINTF("RPL: Verifying the presence of the RPL header option\n");
   switch(UIP_IP_BUF->proto){
   case UIP_PROTO_HBHO:
     PRINTF("RPL: Removing the RPL header option\n");
@@ -273,21 +285,21 @@ rpl_invert_header(void)
   case UIP_PROTO_HBHO:
     break;
   default:
-    PRINTF("RPL: No hop-by-hop Option found\n");
+ //   PRINTF("RPL: No hop-by-hop Option found\n");
     uip_ext_len = last_uip_ext_len;
     return 0;
   }
 
   switch (UIP_EXT_HDR_OPT_BUF->type) {
   case UIP_EXT_HDR_OPT_RPL:
-    PRINTF("RPL: Updating RPL option (switching direction)\n");
+    PRINTF("invert RPL: Updating RPL option (switching direction)\n");
     UIP_EXT_HDR_OPT_RPL_BUF->flags &= RPL_HDR_OPT_DOWN;
     UIP_EXT_HDR_OPT_RPL_BUF->flags ^= RPL_HDR_OPT_DOWN;
     UIP_EXT_HDR_OPT_RPL_BUF->senderrank = rpl_get_instance(UIP_EXT_HDR_OPT_RPL_BUF->instance)->current_dag->rank;
     uip_ext_len = last_uip_ext_len;
     return RPL_HOP_BY_HOP_LEN;
   default:
-    PRINTF("RPL: Multi Hop-by-hop options not implemented\n");
+    //PRINTF("RPL: Multi Hop-by-hop options not implemented\n");
     uip_ext_len = last_uip_ext_len;
     return 0;
   }

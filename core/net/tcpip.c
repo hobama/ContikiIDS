@@ -754,13 +754,15 @@ PROCESS_THREAD(tcpip_process, ev, data)
   tcpip_icmp6_event = process_alloc_event();
 #endif /* UIP_CONF_ICMP6 */
   etimer_set(&periodic, CLOCK_SECOND / 2);
-
+  //printf("UIP INIT");
   uip_init();
 #ifdef UIP_FALLBACK_INTERFACE
   UIP_FALLBACK_INTERFACE.init();
 #endif
 /* initialize RPL if configured for using RPL */
 #if UIP_CONF_IPV6_RPL
+   // printf("RPL INIT");
+
   rpl_init();
 #endif /* UIP_CONF_IPV6_RPL */
 

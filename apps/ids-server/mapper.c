@@ -139,7 +139,8 @@ struct Node {
    * IP address of this node
    */
   uip_ipaddr_t *ip;
-
+  
+//  uip_ipaddr_t *children[UIP_DS6_ROUTE_NB]; 
   /**
    * The compressed IP of the node works as its ID
    */
@@ -187,6 +188,10 @@ struct Node {
  */
 // struct rpl_metric_container mc;
  rpl_metric_container_t mc;
+
+
+ //uint8_t hops;
+
 };
 
 /**
@@ -198,7 +203,6 @@ static struct Node network[NETWORK_NODES];
  * The length of the node list (network)
  */
 static int node_index = 0;
-
 /**
  * Search for a node by ID
  *
@@ -290,6 +294,7 @@ print_subtree(struct Node *node, int depth)
  // printf(" (t: %d, p: %x, r: %d ) ", node->timestamp, node->parent_id, node->rank);
   printf(" (t: %d, p: %x, r: %d,e: %d) ", node->timestamp, node->parent->parent_id, node->rank, node->mc.obj.etx);
 
+  //print_routing_table();
   printf("    {");
 //  printf("dharmini");
 
@@ -323,13 +328,13 @@ print_graph()
     if(!network[i].visited)
       print_subtree(&network[i], 0);
   }
-  printf("-----------------------\n");
+//  printf("-----------------------\n");
 }
 
 void
 tcpip_handler()
 {
-  uint8_t *appdata;
+  uint8_t *appdata,child_nodes=0;
   uint16_t src_id, parent_id, dag_id;
   uint8_t rpl_instance_id, version_recieved, timestamp_recieved;
 
@@ -348,7 +353,7 @@ tcpip_handler()
   appdata = (uint8_t *) uip_appdata;
   MAPPER_GET_PACKETDATA(src_id, appdata);
 
-  PRINTF("Source ID: %x\n", src_id);
+//  PRINTF("Source ID: %x\n", src_id);
 
   id = add_node(src_id);
   if(id == NULL)
@@ -365,9 +370,9 @@ tcpip_handler()
   MAPPER_GET_PACKETDATA(dag_id, appdata);
 
   if (dag_id != compress_ipaddr_t(&current_dag->dag_id)) {
-    PRINTF("Mapping information received which does not match our current");
-    PRINTF("DODAG, information ignored (got %x while expecting %x)\n", dag_id,
-        compress_ipaddr_t(&current_dag->dag_id));
+  //  PRINTF("Mapping information received which does not match our current");
+   // PRINTF("DODAG, information ignored (got %x while expecting %x)\n", dag_id,
+     //   compress_ipaddr_t(&current_dag->dag_id));
     return;
   }
 
@@ -422,6 +427,8 @@ tcpip_handler()
 
     //dharmini
  MAPPER_GET_PACKETDATA(id->mc.obj.etx, appdata);
+// MAPPER_GET_PACKETDATA(id->hops, appdata);
+
   }
   
   id->neighbors = neighbors;
@@ -480,10 +487,12 @@ map_network()
 
   if (uip_ds6_routing_table[working_host].isused &&
       timestamp_outdated(node->timestamp, MAPPING_RECENT_WINDOW)) {
-    // RPL Instance ID | DAG ID (compressed, uint16_t) | DAG Version | timestamp |etx
+    // RPL Instance ID | DAG ID (compressed, uint16_t) | DAG Version | timestamp |etx | hops
     static char data[sizeof(current_rpl_instance_id) +
       sizeof(uint16_t) + sizeof(current_dag->version) +
       sizeof(timestamp)+ sizeof(node->mc.obj.etx)];
+
+     //+sizeof(node->hops)];
     void *data_p = data;
     uint16_t tmp;
 
@@ -493,6 +502,8 @@ map_network()
     MAPPER_ADD_PACKETDATA(data_p, current_dag->version);
     MAPPER_ADD_PACKETDATA(data_p, timestamp);
     MAPPER_ADD_PACKETDATA(data_p, node->mc.obj.etx);
+   // MAPPER_ADD_PACKETDATA(data_p, node->hops);
+
     
 
     PRINTF("sending data to: %2d ", working_host);
@@ -530,6 +541,14 @@ check_child_parent_relation()
         // network[i].neighbor[network[i].parent_id].rank +
         // rpl_get_instance(current_rpl_instance_id)->min_hoprankinc) {
 
+
+    /* PRINTF("network[%d].rank %u \n",i,network[i].rank);
+     PRINTF("network[%d].ip",i);
+     PRINT6ADDR(network[i].ip);
+     PRINTF("parentid_rank %u \n",network[i].neighbor[network[i].parent_id].rank);
+     PRINT6ADDR(network[i].neighbor[network[i].parent_id].node->ip);
+     PRINTF("\n");*/
+
     if(network[i].rank < network[i].neighbor[network[i].parent_id].rank +
         rpl_get_instance(current_rpl_instance_id)->min_hoprankinc) {
       network[i].status |= IDS_TEMP_ERROR;
@@ -544,7 +563,7 @@ check_child_parent_relation()
     if((network[i].status & (IDS_TEMP_ERROR | IDS_RELATIVE_ERROR)) ==
         (IDS_TEMP_ERROR | IDS_RELATIVE_ERROR)) {
       if (status == 0)
-        printf("The following nodes has advertised incorrect routes:\n");
+       // printf("The following nodes has advertised incorrect routes:\n");
 
       uip_debug_ipaddr_print(network[i].ip);
       printf(" (%d)\n", network[i].rank);
@@ -582,7 +601,7 @@ missing_ids_info()
   for (i = 0; i < node_index; ++i) {
     if (!valid_node(&network[i])) {
       if (status == 0)
-        printf("The following list of nodes either have outdated or non-existent information: \n");
+       // printf("The following list of nodes either have outdated or non-existent information: \n");
       uip_debug_ipaddr_print(network[i].ip);
       printf("\n");
 
@@ -616,6 +635,21 @@ int correct_rank_inconsistencies(void) {
       continue;
 
     for (j = 0; j < network[i].neighbors; ++j) {
+
+        PRINTF("neighbors %d \n",network[i].neighbors);
+        PRINTF("node ip");
+        PRINT6ADDR(network[i].neighbor[j].node->ip);
+        PRINTF("and rank %d\n",network[i].neighbor[j].node->rank);
+     //   PRINTF("network[i].neighbor[j].rank");
+       // PRINT6ADDR(network[i].neighbor[j].ip);
+       
+
+        PRINTF("and ranks %d \n",network[i].neighbor[j].rank);    
+        PRINTF("avg %d\n",network[i].neighbor[j].rank + network[i].neighbor[j].node->rank);
+       // PRINTF("\n");
+       // PRINTF("0 addrn");
+       // PRINT6ADDR(network[0]);
+       // PRINTF("\n");
       // If we haven't gotten any information from this neighbor, ignore it
       if (!valid_node(network[i].neighbor[j].node) ||
           network[i].neighbor[j].node == &network[0])
@@ -624,8 +658,14 @@ int correct_rank_inconsistencies(void) {
       // We have an inconsistency
 
       int diff;
+      diff = network[i].neighbor[j].node->rank - network[i].neighbor[j].rank;
+        PRINTF("DIFF %d",diff);
+
       if (network[i].neighbor[j].node->rank > network[i].neighbor[j].rank)
+       {
         diff = network[i].neighbor[j].node->rank - network[i].neighbor[j].rank;
+        PRINTF("DIFF %d",diff);
+       }
       else
         diff = network[i].neighbor[j].rank - network[i].neighbor[j].node->rank ;
 

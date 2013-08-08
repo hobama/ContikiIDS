@@ -52,7 +52,9 @@
 #include <limits.h>
 #include <string.h>
 
-#define DEBUG DEBUG_ANNOTATE
+//#define DEBUG DEBUG_ANNOTATE
+
+#define DEBUG DEBUG_NONE
 
 
 #include "net/uip-debug.h"
@@ -141,7 +143,7 @@ static void
 remove_worst_parent(rpl_dag_t *dag, rpl_rank_t min_worst_rank)
 {
   rpl_parent_t *p, *worst;
-
+  //printf("worst parent");
   PRINTF("RPL: Removing the worst parent\n");
 
   /* Find the parent with the highest rank. */
@@ -161,6 +163,8 @@ remove_worst_parent(rpl_dag_t *dag, rpl_rank_t min_worst_rank)
 static int
 should_send_dao(rpl_instance_t *instance, rpl_dio_t *dio, rpl_parent_t *p)
 {
+
+  //printf("should_send_dao");
   /* if MOP is set to no downward routes no DAO should be sent */
   if(instance->mop == RPL_MOP_NO_DOWNWARD_ROUTES) {
     return 0;
@@ -173,9 +177,14 @@ should_send_dao(rpl_instance_t *instance, rpl_dio_t *dio, rpl_parent_t *p)
 static int
 acceptable_rank(rpl_dag_t *dag, rpl_rank_t rank)
 {
-  return rank != INFINITE_RANK &&
-    ((dag->instance->max_rankinc == 0) ||
-     DAG_RANK(rank, dag->instance) <= DAG_RANK(dag->min_rank + dag->instance->max_rankinc, dag->instance));
+//   printf("acceptable rank \n");
+  
+ // printf("calcualted vaues rank %u dag->min_rank,dag->instance->max_rankinc,dag->instance %u %u %u %u \n ",rank,dag->min_rank,dag->instance->max_rankinc,DAG_RANK(rank, dag->instance) , DAG_RANK(dag->min_rank + dag->instance->max_rankinc, dag->instance));
+
+ //printf("acceptable rank rank %u  (instance)->min_hoprankinc %u dag->instance->max_rankinc %u,dag->min_rank %u,dag->instance %u, DAG_RANK(rank, dag->instance) %u,DAG_RANK(dag->min_rank + dag->instance->max_rankinc, dag->instance) %u, rank condition %d \n",rank,(dag->instance)->min_hoprankinc,dag->instance->max_rankinc,dag->min_rank,dag->instance,DAG_RANK(rank, dag->instance),DAG_RANK(dag->min_rank + dag->instance->max_rankinc, dag->instance), rank != INFINITE_RANK &&  ((dag->instance->max_rankinc == 0) || DAG_RANK(rank, dag->instance) <= DAG_RANK(dag->min_rank + dag->instance->max_rankinc, dag->instance)));
+  
+
+  return rank != INFINITE_RANK &&((dag->instance->max_rankinc == 0) || DAG_RANK(rank, dag->instance) <= DAG_RANK(dag->min_rank + dag->instance->max_rankinc, dag->instance));
 }
 /************************************************************************/
 static rpl_dag_t *
@@ -203,6 +212,7 @@ get_dag(uint8_t instance_id, uip_ipaddr_t *dag_id)
 rpl_dag_t *
 rpl_set_root(uint8_t instance_id, uip_ipaddr_t *dag_id)
 {
+  //printf("RPL_set_root \n");
   rpl_dag_t *dag;
   rpl_instance_t *instance;
   uint8_t version;
@@ -249,7 +259,7 @@ rpl_set_root(uint8_t instance_id, uip_ipaddr_t *dag_id)
   instance->lifetime_unit = RPL_DEFAULT_LIFETIME_UNIT;
 
   dag->rank = ROOT_RANK(instance);
-
+  
   if(instance->current_dag != dag && instance->current_dag != NULL) {
     /* Remove routes installed by DAOs. */
     rpl_remove_routes(instance->current_dag);
@@ -276,6 +286,8 @@ rpl_set_root(uint8_t instance_id, uip_ipaddr_t *dag_id)
 int
 rpl_repair_root(uint8_t instance_id)
 {
+
+  //printf("repair root");
   rpl_instance_t *instance;
 
   instance = rpl_get_instance(instance_id);
@@ -355,7 +367,8 @@ rpl_set_prefix(rpl_dag_t *dag, uip_ipaddr_t *prefix, unsigned len)
 int
 rpl_set_default_route(rpl_instance_t *instance, uip_ipaddr_t *from)
 {
-  if(instance->def_route != NULL) {
+
+   if(instance->def_route != NULL) {
     if(instance->def_route->isused) {
       PRINTF("RPL: Removing default route through ");
       PRINT6ADDR(&instance->def_route->ipaddr);
@@ -365,6 +378,8 @@ rpl_set_default_route(rpl_instance_t *instance, uip_ipaddr_t *from)
     instance->def_route = NULL;
   }
 
+//  printf("rplroutedefault");
+  
   if(from != NULL) {
     PRINTF("RPL: Adding default route through ");
     PRINT6ADDR(from);
@@ -401,7 +416,7 @@ rpl_alloc_dag(uint8_t instance_id, uip_ipaddr_t *dag_id)
 {
   rpl_dag_t *dag, *end;
   rpl_instance_t *instance;
-
+  //printf("rpl_alloc_dag \n");
   instance = rpl_get_instance(instance_id);
   if(instance == NULL) {
     instance = rpl_alloc_instance(instance_id);
@@ -424,6 +439,7 @@ rpl_alloc_dag(uint8_t instance_id, uip_ipaddr_t *dag_id)
   }
 
   RPL_STAT(rpl_stats.mem_overflows++);
+  //printf("free instance \n");
   rpl_free_instance(instance);
   return NULL;
 }
@@ -437,6 +453,7 @@ rpl_set_default_instance(rpl_instance_t *instance)
 void
 rpl_free_instance(rpl_instance_t *instance)
 {
+ // printf("free instance \n");
   rpl_dag_t *dag;
   rpl_dag_t *end;
 
@@ -486,6 +503,7 @@ rpl_free_dag(rpl_dag_t *dag)
 rpl_parent_t *
 rpl_add_parent(rpl_dag_t *dag, rpl_dio_t *dio, uip_ipaddr_t *addr)
 {
+  printf("RPL add parent \n");
   rpl_parent_t *p;
 
   if(RPL_PARENT_COUNT(dag) == RPL_MAX_PARENTS_PER_DAG) {
@@ -504,6 +522,9 @@ rpl_add_parent(rpl_dag_t *dag, rpl_dio_t *dio, uip_ipaddr_t *addr)
   p->link_metric = INITIAL_LINK_METRIC;
   memcpy(&p->mc, &dio->mc, sizeof(p->mc));
   list_add(dag->parents, p);
+  PRINTF("added RPL parent");
+  PRINT6ADDR(p);
+  PRINTF("\n");
   return p;
 }
 /************************************************************************/
@@ -560,6 +581,7 @@ rpl_find_parent_any_dag(rpl_instance_t *instance, uip_ipaddr_t *addr)
 rpl_dag_t *
 rpl_select_dag(rpl_instance_t *instance, rpl_parent_t *p)
 {
+  //printf("select dag\n");
   rpl_parent_t *last_parent;
   rpl_dag_t *dag, *end, *best_dag;
   rpl_rank_t old_rank;
@@ -651,6 +673,8 @@ rpl_select_dag(rpl_instance_t *instance, rpl_parent_t *p)
 rpl_parent_t *
 rpl_select_parent(rpl_dag_t *dag)
 {
+  //printf("rpl_select_parent \n");
+
   rpl_parent_t *p, *best;
 
   best = NULL;
@@ -783,6 +807,7 @@ rpl_find_of(rpl_ocp_t ocp)
 void
 rpl_join_instance(uip_ipaddr_t *from, rpl_dio_t *dio)
 {
+  //printf("RPL join instance \n");
   rpl_instance_t *instance;
   rpl_dag_t *dag;
   rpl_parent_t *p;
@@ -795,6 +820,8 @@ rpl_join_instance(uip_ipaddr_t *from, rpl_dio_t *dio)
   }
 
   instance = dag->instance;
+
+  //printf("Adding parent / from the dio, dio_maxrankinc %u,dio_minhoprankinc %u, mc_etx %u \n",dio->dag_max_rankinc,dio->dag_min_hoprankinc,dio->mc.obj.etx);
 
   p = rpl_add_parent(dag, dio, from);
   PRINTF("RPL: Adding ");
@@ -854,10 +881,13 @@ rpl_join_instance(uip_ipaddr_t *from, rpl_dio_t *dio)
   dag->rank = instance->of->calculate_rank(p, 0);
   /* So far this is the lowest rank we are aware of. */
   dag->min_rank = dag->rank;
-
+  //printf("minum rank of the dag %u \n",dag->rank);
   if(default_instance == NULL) {
     default_instance = instance;
   }
+
+  //printf("RPL: Joined DAG with instance ID %u, rank %hu, DAG ID ",
+  //       dio->instance_id, dag->rank);
 
   PRINTF("RPL: Joined DAG with instance ID %u, rank %hu, DAG ID ",
          dio->instance_id, dag->rank);
@@ -880,6 +910,7 @@ rpl_join_instance(uip_ipaddr_t *from, rpl_dio_t *dio)
 void
 rpl_add_dag(uip_ipaddr_t *from, rpl_dio_t *dio)
 {
+  //printf("add dag");
   rpl_instance_t *instance;
   rpl_dag_t *dag, *previous_dag;
   rpl_parent_t *p;
@@ -1005,6 +1036,7 @@ rpl_local_repair(rpl_instance_t *instance)
 void
 rpl_recalculate_ranks(void)
 {
+  
   rpl_instance_t *instance, *end;
   rpl_parent_t *p;
   int i;
@@ -1088,6 +1120,7 @@ rpl_process_parent_event(rpl_instance_t *instance, rpl_parent_t *p)
 void
 rpl_process_dio(uip_ipaddr_t *from, rpl_dio_t *dio)
 {
+  //printf("process dio \n");
   rpl_instance_t *instance;
   rpl_dag_t *dag, *previous_dag;
   rpl_parent_t *p;
@@ -1170,6 +1203,7 @@ rpl_process_dio(uip_ipaddr_t *from, rpl_dio_t *dio)
         remove_worst_parent(dag, dio->rank);
       }
       /* Add the DIO sender as a candidate parent. */
+      //printf("adding new parent");
       p = rpl_add_parent(dag, dio, from);
       if(p == NULL) {
         PRINTF("RPL: Failed to add a new parent (");
@@ -1177,8 +1211,8 @@ rpl_process_dio(uip_ipaddr_t *from, rpl_dio_t *dio)
         PRINTF(")\n");
         return;
       }
-      PRINTF("RPL: New candidate parent with rank %u: ", (unsigned)p->rank);
-      PRINT6ADDR(from);
+      PRINTF("RPL: New candidate parent with rank %u:  and prefix", (unsigned)p->rank);
+      PRINT6ADDR(&from);
       PRINTF("\n");
     } else {
       p = rpl_find_parent(previous_dag, from);
@@ -1204,6 +1238,8 @@ rpl_process_dio(uip_ipaddr_t *from, rpl_dio_t *dio)
   PRINTF("parent rank %u, parent etx %u, link metric %u, instance etx %u\n",
 	 p->rank, p->mc.obj.etx, p->link_metric, instance->mc.obj.etx);
 
+ 
+
   /* We have allocated a candidate parent; process the DIO further. */
 
   memcpy(&p->mc, &dio->mc, sizeof(p->mc));
@@ -1219,6 +1255,7 @@ rpl_process_dio(uip_ipaddr_t *from, rpl_dio_t *dio)
       rpl_schedule_dao(instance);
     }
   }
+  //printf("p->dtsn %d\n",dio->dtsn);
   p->dtsn = dio->dtsn;
 }
 /************************************************************************/

@@ -45,6 +45,8 @@
 #include "sys/ctimer.h"
 
 #define DEBUG DEBUG_NONE
+//#define DEBUG DEBUG_ANNOTATE
+
 #include "net/uip-debug.h"
 
 /************************************************************************/
@@ -63,6 +65,8 @@ static uint8_t dio_send_ok;
 static void
 handle_periodic_timer(void *ptr)
 {
+ 
+  // printf("periodic timer\n"),
   rpl_purge_routes();
   rpl_recalculate_ranks();
 
@@ -81,7 +85,7 @@ static void
 new_dio_interval(rpl_instance_t *instance)
 {
   uint32_t time;
-
+  //printf("new dio interval\n"),
   /* TODO: too small timer intervals for many cases */
   time = 1UL << instance->dio_intcurrent;
 
@@ -126,6 +130,9 @@ new_dio_interval(rpl_instance_t *instance)
 static void
 handle_dio_timer(void *ptr)
 {
+
+
+  printf("handle dio timer\n");
   rpl_instance_t *instance;
 
   instance = (rpl_instance_t *)ptr;
@@ -168,7 +175,8 @@ handle_dio_timer(void *ptr)
 /************************************************************************/
 void
 rpl_reset_periodic_timer(void)
-{
+{ 
+  //printf("rplreset\n");
   next_dis = RPL_DIS_INTERVAL - RPL_DIS_START_DELAY;
   ctimer_set(&periodic_timer, CLOCK_SECOND, handle_periodic_timer, NULL);
 }
@@ -194,6 +202,7 @@ rpl_reset_dio_timer(rpl_instance_t *instance)
 static void
 handle_dao_timer(void *ptr)
 {
+  printf("handle dao timer\n");
   rpl_instance_t *instance;
 
   instance = (rpl_instance_t *)ptr;
@@ -218,6 +227,7 @@ handle_dao_timer(void *ptr)
 void
 rpl_schedule_dao(rpl_instance_t *instance)
 {
+  printf("schedule dao\n");
   clock_time_t expiration_time;
 
   expiration_time = etimer_expiration_time(&instance->dao_timer.etimer);
@@ -234,3 +244,4 @@ rpl_schedule_dao(rpl_instance_t *instance)
   }
 }
 /************************************************************************/
+

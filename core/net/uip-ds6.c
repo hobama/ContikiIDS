@@ -99,16 +99,16 @@ static uip_ds6_defrt_t *locdefrt;
 static uip_ds6_route_t *locroute;
 
 void print_routing_table() {
-    printf("Routing table:\n");
+    //printf("Routing table:\n");
     uip_ds6_route_t * tmp_route;
     for(tmp_route = uip_ds6_routing_table;
         tmp_route < uip_ds6_routing_table + UIP_DS6_ROUTE_NB; tmp_route++) {
       if (tmp_route->isused == 0)
         continue;
-      printf("source: ");
+      //printf("source: ");
       uip_debug_ipaddr_print(& tmp_route->ipaddr);
-      printf("\nlength: %d\n", tmp_route->length);
-      printf("metric: %d\nnexthop:", tmp_route->metric);
+      //printf("\nlength: %d\n", tmp_route->length);
+      //printf("metric: %d\nnexthop:", tmp_route->metric);
       uip_debug_ipaddr_print(& tmp_route->nexthop);
       printf("\n---\n");
     }
@@ -418,6 +418,8 @@ uip_ds6_nbr_ll_lookup(uip_lladdr_t *lladdr)
 uip_ds6_defrt_t *
 uip_ds6_defrt_add(uip_ipaddr_t *ipaddr, unsigned long interval)
 {
+  printf("Adding defrouter with ip addr ");
+ 
   if(uip_ds6_list_loop
      ((uip_ds6_element_t *)uip_ds6_defrt_list, UIP_DS6_DEFRT_NB,
       sizeof(uip_ds6_defrt_t), ipaddr, 128,
@@ -801,6 +803,8 @@ uip_ds6_route_t *
 uip_ds6_route_add(uip_ipaddr_t *ipaddr, uint8_t length, uip_ipaddr_t *nexthop,
                   uint8_t metric)
 {
+
+  printf("route addition\n");
   if(uip_ds6_list_loop
      ((uip_ds6_element_t *)uip_ds6_routing_table, UIP_DS6_ROUTE_NB,
       sizeof(uip_ds6_route_t), ipaddr, length,
@@ -810,7 +814,7 @@ uip_ds6_route_add(uip_ipaddr_t *ipaddr, uint8_t length, uip_ipaddr_t *nexthop,
     locroute->length = length;
     uip_ipaddr_copy(&(locroute->nexthop), nexthop);
     locroute->metric = metric;
-
+    //printf("metric in routeadd %d",metric);
 #ifdef UIP_DS6_ROUTE_STATE_TYPE
     memset(&locroute->state, 0, sizeof(UIP_DS6_ROUTE_STATE_TYPE));
 #endif

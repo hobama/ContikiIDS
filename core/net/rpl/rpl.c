@@ -47,6 +47,7 @@
 #include "net/neighbor-info.h"
 
 #define DEBUG DEBUG_NONE
+//#define DEBUG DEBUG_PRINT
 #include "net/uip-debug.h"
 
 #include <limits.h>
@@ -108,10 +109,13 @@ uip_ds6_route_t *
 rpl_add_route(rpl_dag_t *dag, uip_ipaddr_t *prefix, int prefix_len,
               uip_ipaddr_t *next_hop)
 {
+
+  printf("add route entry \n");
   uip_ds6_route_t *rep;
 
   rep = uip_ds6_route_lookup(prefix);
   if(rep == NULL) {
+    
     if((rep = uip_ds6_route_add(prefix, prefix_len, next_hop, 0)) == NULL) {
       PRINTF("RPL: No space for more route entries\n");
       return NULL;
@@ -163,9 +167,9 @@ rpl_link_neighbor_callback(const rimeaddr_t *addr, int known, int etx)
           instance->of->parent_state_callback(parent, known, etx);
         }
         if(!known) {
-          PRINTF("RPL: Removing parent ");
-          PRINT6ADDR(&parent->addr);
-          PRINTF(" in instance %u because of bad connectivity (ETX %d)\n", instance->instance_id, etx);
+        //  PRINTF("RPL: Removing parent ");
+         // PRINT6ADDR(&parent->addr);
+         // PRINTF(" in instance %u because of bad connectivity (ETX %d)\n", instance->instance_id, etx);
           parent->rank = INFINITE_RANK;
         }
       }

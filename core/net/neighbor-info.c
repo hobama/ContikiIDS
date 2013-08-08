@@ -58,20 +58,33 @@ static neighbor_info_subscriber_t subscriber_callback;
 static void
 update_metric(const rimeaddr_t *dest, int packet_metric)
 {
+  
+//  printf("update metric from neighborinfo \n");
   link_metric_t *metricp;
   link_metric_t recorded_metric, new_metric;
   unsigned long time;
 
   metricp = (link_metric_t *)neighbor_attr_get_data(&attr_etx, dest);
+  //printf("attribute neighbor_attr_get_data %u packet_metric %u \n",metricp,packet_metric);
+
   packet_metric = NEIGHBOR_INFO_ETX2FIX(packet_metric);
+ 
+  //printf("packet_metric %d \n",packet_metric);
+
   if(metricp == NULL || *metricp == 0) {
     recorded_metric = NEIGHBOR_INFO_ETX2FIX(ETX_LIMIT);
     new_metric = packet_metric;
+   
   } else {
     recorded_metric = *metricp;
     /* Update the EWMA of the ETX for the neighbor. */
+
+//    printf("new_metric %u, (uint16_t)recorded_metric %u,new_metric %u ",new_metric,(uint16_t)recorded_metric,(uint16_t)packet_metric);
     new_metric = ((uint16_t)recorded_metric * ETX_ALPHA +
                (uint16_t)packet_metric * (ETX_SCALE - ETX_ALPHA)) / ETX_SCALE;
+
+    //printf("new_metric %u, (uint16_t)recorded_metric %u, ccket_metric %u\n ",new_metric,(uint16_t)recorded_metric,(uint16_t)packet_metric);
+
   }
 
   PRINTF("neighbor-info: ETX changed from %d to %d (packet ETX = %d) %d\n",
@@ -79,13 +92,25 @@ update_metric(const rimeaddr_t *dest, int packet_metric)
 	 NEIGHBOR_INFO_FIX2ETX(new_metric),
 	 NEIGHBOR_INFO_FIX2ETX(packet_metric),
          dest->u8[7]);
+ 
+//printf("neighbor-info: ETX changed from %d to %d (packet ETX = %d) %d\n",
+//        NEIGHBOR_INFO_FIX2ETX(recorded_metric),
+  //      NEIGHBOR_INFO_FIX2ETX(new_metric),
+    //     NEIGHBOR_INFO_FIX2ETX(packet_metric),
+      //   dest->u8[7]);
+
 
   if(neighbor_attr_has_neighbor(dest)) {
     time = clock_seconds();
+
     neighbor_attr_set_data(&attr_etx, dest, &new_metric);
+   
     neighbor_attr_set_data(&attr_timestamp, dest, &time);
+
+ 
     if(new_metric != recorded_metric && subscriber_callback != NULL) {
       subscriber_callback(dest, 1, new_metric);
+     printf("suscrber call back %d \n");
     }
   }
 }

@@ -45,7 +45,8 @@
 
 #include "net/rpl/rpl-private.h"
 #include "net/neighbor-info.h"
-
+#include "node-id.h"
+//#define DEBUG DEBUG_PRINT
 #define DEBUG DEBUG_NONE
 #include "net/uip-debug.h"
 
@@ -83,12 +84,28 @@ typedef uint16_t rpl_path_metric_t;
 static rpl_path_metric_t
 calculate_path_metric(rpl_parent_t *p)
 {
+  if(node_id == 5)
+  {
+   
+   return  p->mc.obj.etx = 0;
+  }
+
+ /* if(node_id == 8)
+  {
+
+   return  p->mc.obj.etx = 128;
+  }*/
+
+  //printf("before p->link_metric %u p->mc.obj.etx %u parent__rank %u ROOT_RANK(p->dag->instance) %u \n",p->link_metric,p->mc.obj.etx,p->rank,ROOT_RANK(p->dag->instance));
+
   if(p == NULL || (p->mc.obj.etx == 0 && p->rank > ROOT_RANK(p->dag->instance))) {
     return MAX_PATH_COST * RPL_DAG_MC_ETX_DIVISOR;
   } else {
     long etx = p->link_metric;
     etx = (etx * RPL_DAG_MC_ETX_DIVISOR) / NEIGHBOR_INFO_ETX_DIVISOR;
+    //printf("after p->mc.obj.etx + (uint16_t) etx %u \n ",p->mc.obj.etx + (uint16_t) etx);
     return p->mc.obj.etx + (uint16_t) etx;
+    
   }
 }
 
@@ -107,21 +124,35 @@ calculate_rank(rpl_parent_t *p, rpl_rank_t base_rank)
 {
   rpl_rank_t new_rank;
   rpl_rank_t rank_increase;
+  
+  PRINTF("PArent Address");
+  PRINT6ADDR(&p->addr);
+  PRINTF("\n");
 
   if(p == NULL) {
     if(base_rank == 0) {
       return INFINITE_RANK;
     }
+
     rank_increase = NEIGHBOR_INFO_FIX2ETX(INITIAL_LINK_METRIC) * RPL_MIN_HOPRANKINC;
+    PRINTF("Rank increase %u,INITIAL_LINK_METRIC %u,NEIGHBOR_INFO_FIX2ETX(INITIAL_LINK_METRIC) %u,RPL_MIN_HOPRANKINC %u \n",rank_increase,INITIAL_LINK_METRIC,NEIGHBOR_INFO_FIX2ETX(INITIAL_LINK_METRIC),RPL_MIN_HOPRANKINC);
   } else {
     /* multiply first, then scale down to avoid truncation effects */
     rank_increase = NEIGHBOR_INFO_FIX2ETX(p->link_metric * p->dag->instance->min_hoprankinc);
+     PRINTF("Rank increase %u,p->link_metric %u,p->dag->instance->min_hoprankinc %u,NEIGHBOR_INFO_FIX2ETX(p->link_metric * p->dag->instance->min_hoprankinc) %u \n",rank_increase,p->link_metric,p->dag->instance->min_hoprankinc,NEIGHBOR_INFO_FIX2ETX(p->link_metric * p->dag->instance->min_hoprankinc));
+
     if(base_rank == 0) {
+      PRINTF("p->rank %u\n",p->rank);
+     
       base_rank = p->rank;
+     
     }
   }
 
-  if(INFINITE_RANK - base_rank < rank_increase) {
+  PRINTF("INFINITE_RANK %u,base_rank %u,INFINITE_RANK - base_rank %u rank_increase %u\n",INFINITE_RANK,base_rank,INFINITE_RANK - base_rank,rank_increase);
+  
+   if(INFINITE_RANK - base_rank < rank_increase) {
+    
     /* Reached the maximum rank. */
     new_rank = INFINITE_RANK;
   } else {
@@ -130,12 +161,16 @@ calculate_rank(rpl_parent_t *p, rpl_rank_t base_rank)
     new_rank = base_rank + rank_increase;
   }
 
+ // printf("base rank %u rank increase %u new rank %u \n",base_rank,rank_increase,new_rank);
   return new_rank;
 }
 
 static rpl_dag_t *
 best_dag(rpl_dag_t *d1, rpl_dag_t *d2)
 {
+
+ PRINTF("best_dag");
+
   if(d1->grounded != d2->grounded) {
     return d1->grounded ? d1 : d2;
   }
@@ -150,13 +185,14 @@ best_dag(rpl_dag_t *d1, rpl_dag_t *d2)
 static rpl_parent_t *
 best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
 {
+  //printf("best parent \n");
   rpl_dag_t *dag;
   rpl_path_metric_t min_diff;
   rpl_path_metric_t p1_metric;
   rpl_path_metric_t p2_metric;
 
   dag = p1->dag; /* Both parents must be in the same DAG. */
-
+  
   min_diff = RPL_DAG_MC_ETX_DIVISOR /
              PARENT_SWITCH_THRESHOLD_DIV;
 
@@ -171,10 +207,14 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
              p2_metric - min_diff,
              p1_metric,
              p2_metric + min_diff);
+      PRINTF("Preferred Parent is");
+      PRINT6ADDR(&dag->preferred_parent);
+      PRINTF("\n");
       return dag->preferred_parent;
     }
   }
-
+  
+  PRINTF("p1_metric %u, p2_metric %u,comparision %u \n",p1_metric,p2_metric,p1_metric < p2_metric ? p1 : p2);
   return p1_metric < p2_metric ? p1 : p2;
 }
 
@@ -186,7 +226,7 @@ update_metric_container(rpl_instance_t *instance)
 #if RPL_DAG_MC == RPL_DAG_MC_ENERGY
   uint8_t type;
 #endif
-
+ // printf("calling update_metric_etx function \n");
   instance->mc.flags = RPL_DAG_MC_FLAG_P;
   instance->mc.aggr = RPL_DAG_MC_AGGR_ADDITIVE;
   instance->mc.prec = 0;
@@ -213,6 +253,11 @@ update_metric_container(rpl_instance_t *instance)
   PRINTF("RPL: My path ETX to the root is %u.%u\n",
 	instance->mc.obj.etx / RPL_DAG_MC_ETX_DIVISOR,
 	(instance->mc.obj.etx % RPL_DAG_MC_ETX_DIVISOR * 100) / RPL_DAG_MC_ETX_DIVISOR);
+
+  //printf("RPL: My path ETX to the root is %u.%u\n",
+    //    instance->mc.obj.etx / RPL_DAG_MC_ETX_DIVISOR,
+      //  (instance->mc.obj.etx % RPL_DAG_MC_ETX_DIVISOR * 100) / RPL_DAG_MC_ETX_DIVISOR);
+
 
 #elif RPL_DAG_MC == RPL_DAG_MC_ENERGY
 
