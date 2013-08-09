@@ -280,7 +280,7 @@ void
 print_subtree(struct Node *node, int depth)
 {
   int i;
-
+  
   printf("%*s", depth * 2, "");
 
   uip_debug_ipaddr_print(node->ip);
@@ -824,8 +824,7 @@ PROCESS_THREAD(mapper, ev, data)
               continue;
             network[0].rank = instance_table[mapper_instance].min_hoprankinc;
 
-            current_rpl_instance_id =
-              instance_table[mapper_instance].instance_id;
+                current_rpl_instance_id = instance_table[mapper_instance].instance_id;
             current_dag = &instance_table[mapper_instance].dag_table[mapper_dag];
 
             // Reset the roots neighbor list and ranks
