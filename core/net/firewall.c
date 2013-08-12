@@ -34,12 +34,12 @@ struct recorded_state_table
           LIST_STRUCT(Unauthorized_connection);
 };*/
 
-static int    already_visited_address;
-static unsigned int packet_count=0;
+//static int    already_visited_address;
+//static int packet_count=0;
 static struct  recorded_state_table stored_connections[incoming_allowed_connections];
 static struct  individual_ip_record_table_state invidual_entry [incoming_allowed_connections];
 //static int counter_used;
-
+int i=0;
 
 uint16_t compress_ipaddr_t(uip_ipaddr_t * ipaddr) {
   return ipaddr->u16[7];
@@ -84,7 +84,8 @@ int udp_source_port_mismatch()
 int firewall_valid_packet(void) 
 {
 
-	static int i=0;
+	
+        
         if( UIP_IP_BUF->ttl == 0)
         return;
         //already_visited_address=1;	
@@ -93,23 +94,26 @@ int firewall_valid_packet(void)
 	if(UIP_IP_BUF->proto == (uip_htons(UIP_PROTO_NONE)))
        	return;
 
-
-	if(stored_connections->individualconnections[i]->visited_address)
+        
+       
+/*	if(stored_connections->individualconnections[i]->visited_address)
 	{
-		if(already_visited_address)
-			{
 		//TODO : check for the destination address centric like if(destination_already_vonnection ->connectoin +1
-        		stored_connections->individualconnections[i]->number_of_connections=stored_connections->individualconnections[i]->number_of_connections+1;
-			}
+        		stored_connections->individualconnections[i]->number_of_connections+=1;
+			
 	}
 	else
 	{
-			stored_connections->individualconnections[i]->visited_address=1;
-        	        already_visited_address=1;	
-			stored_connections->individualconnections[i]->number_of_connections=stored_connections->individualconnections[i]->number_of_connections+1;
-	}
+				stored_connections->individualconnections[i]->visited_address=1;
+        	       	stored_connections->individualconnections[i]->number_of_connections+=1;
+	}*/
 
         // TODO : Check in the list of black listed adresses before entering the protocol suite to save time */
+
+for(;i<=incoming_allowed_connections;i++)
+{
+  if( stored_connections->individualconnections[i]->visited_address)
+  return;
  
       	
 	switch(UIP_IP_BUF->proto)
@@ -119,44 +123,49 @@ int firewall_valid_packet(void)
               printf("\n src:");
               uip_debug_ipaddr_print(&UIP_IP_BUF->srcipaddr);
              // PRINT6ADDR(&UIP_IP_BUF->srcipaddr); // printf("\t");
-              printf("\ndestination : ");
+              printf("destination : ");
               PRINT6ADDR(&UIP_IP_BUF->destipaddr);     
-              printf("\nsource port no %d ",uip_htons(UIP_UDP_BUF->srcport));  
-              printf("\ndestination port %d \n",uip_htons(UIP_UDP_BUF->destport));
+              printf("source port no %d\n ",uip_htons(UIP_UDP_BUF->srcport));  
+              printf("destination port %d \n",uip_htons(UIP_UDP_BUF->destport));
 		
-              stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
+        /*      stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
               stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;
   	      stored_connections->individualconnections[i]->number_of_connections=1;
-	      
-               stored_connections->individualconnections[i]->visited_address=1;
-                        already_visited_address=1;     
-             printf("proto:UDP %d \n",UIP_IP_BUF->proto);
-             printf("\n src:");
-             uip_debug_ipaddr_print(&UIP_IP_BUF->srcipaddr);
+	      stored_connections->individualconnections[i]->visited_address=1;*/
+                     //   already_visited_address=1;     
+            // printf("proto:UDP %d \n",UIP_IP_BUF->proto);
+            // printf("\n src:");
+            // uip_debug_ipaddr_print(&UIP_IP_BUF->srcipaddr);
             // PRINT6ADDR(&UIP_IP_BUF->srcipaddr); // printf("\t");
-              printf("\ndestination : ");
-              PRINT6ADDR(&UIP_IP_BUF->destipaddr);     
+            //  printf("\ndestination : ");
+             // PRINT6ADDR(&UIP_IP_BUF->destipaddr);     
               printf("\nsource port no %d ",uip_htons(UIP_UDP_BUF->srcport));  
               printf("\ndestination port %d \n",uip_htons(UIP_UDP_BUF->destport));
             
   //          UIP_UDP_BUF->udpchksum = ~(uip_udpchksum());
   	      
-	      stored_connections->individualconnections[i]->remote_port=uip_htons(UIP_UDP_BUF->srcport);
-              stored_connections->individualconnections[i]->destination_port=uip_htons(UIP_UDP_BUF->destport);
+	    /*  stored_connections->individualconnections[i]->remote_port=uip_htons(UIP_UDP_BUF->srcport);
+              stored_connections->individualconnections[i]->destination_port=uip_htons(UIP_UDP_BUF->destport);*/
               
-	      switch(stored_connections->individualconnections[i]->destination_port)
+	      switch(uip_htons(UIP_UDP_BUF->destport))//stored_connections->individualconnections[i]->destination_port)
 	      {
 	     	
 	      case 5683:
 
 	      	//static coap_packet_t request[1];
 	//	send_ping(&UIP_IP_BUF->destipaddr);
-
-
+               stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
+               stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;
+               stored_connections->individualconnections[i]->number_of_connections+=1;
+               stored_connections->individualconnections[i]->visited_address=1;
+  
 	      break;	
 
 	      case 4443:
 	      break;	
+
+          
+
               }
 
              /* if(stored_connections->individualconnections[i]->destination_port=uip_htons(UIP_UDP_BUF->destport)= 5683)
@@ -168,9 +177,9 @@ int firewall_valid_packet(void)
                    {
  		      printf("DTLS request");
                    }   */
-	stored_connections->individualconnections[i]->connection_status=1;
+//	stored_connections->individualconnections[i]->connection_status=1;
 	
-        break;
+  //      break;
            
         case UIP_PROTO_ICMP6:
 
@@ -210,20 +219,42 @@ int firewall_valid_packet(void)
         break;
     }
     
+//}
 }
+
+/* stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
+              stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;*/
+
+
 
  if(address_mismatch() && udp_source_port_mismatch() )
    {
 
- stored_connections->individualconnections[i]->number_of_bad_reported_connections=stored_connections->individualconnections[i]->number_of_bad_reported_connections+1;
+ stored_connections->individualconnections[i]->number_of_bad_reported_connections+=1;
 
     }
    else
   {
- stored_connections->individualconnections[i]->number_of_succesful_connections=stored_connections->individualconnections[i]->number_of_succesful_connections+1;
+            stored_connections->individualconnections[i]->number_of_succesful_connections+=1;
  }
 
-++i;
+}
+ /* for(i=0;i<=incoming_allowed_connections;i++)
+	{
+     
+     stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
+
+
+
+
+	}*/
+  
+
+            //  stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
+             // stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;
+
+
+    
 
    return 1;
 }
