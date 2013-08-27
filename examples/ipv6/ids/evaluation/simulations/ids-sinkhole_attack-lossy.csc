@@ -12,7 +12,7 @@
     <motedelay_us>1000000</motedelay_us>
     <radiomedium>
       se.sics.cooja.radiomediums.UDGM
-      <transmitting_range>70.0</transmitting_range>
+      <transmitting_range>20.0</transmitting_range>
       <interference_range>90.0</interference_range>
       <success_ratio_tx>1.0</success_ratio_tx>
       <success_ratio_rx>0.0</success_ratio_rx>
