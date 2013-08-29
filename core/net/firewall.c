@@ -38,6 +38,7 @@ struct recorded_state_table
 //static int packet_count=0;
 static struct  recorded_state_table stored_connections[incoming_allowed_connections];
 static struct  individual_ip_record_table_state invidual_entry [incoming_allowed_connections];
+static struct etimer displaytimer;
 //static int counter_used;
 int i=0;
 
@@ -86,7 +87,7 @@ int firewall_valid_packet(void)
 
 	
         
-        if( UIP_IP_BUF->ttl == 0)
+       if( UIP_IP_BUF->ttl == 0)
         return;
         //already_visited_address=1;	
 	//stored_connections->individualconnections[i]->visited_address=1;
@@ -106,47 +107,33 @@ int firewall_valid_packet(void)
 	{
 				stored_connections->individualconnections[i]->visited_address=1;
         	       	stored_connections->individualconnections[i]->number_of_connections+=1;
-	}*/
+	}
 
         // TODO : Check in the list of black listed adresses before entering the protocol suite to save time */
 
-for(;i<=incoming_allowed_connections;i++)
-{
-  if( stored_connections->individualconnections[i]->visited_address)
-  return;
+//for(;i<=incoming_allowed_connections;i++)
+//{
  
+/*   if( stored_connections->individualconnections[i]->visited_address)
+   return;*/
+
+
+
       	
 	switch(UIP_IP_BUF->proto)
      	{
-     	     case UIP_PROTO_UDP: 
+     	   
+             case UIP_PROTO_UDP: 
               printf("proto:UDP %d \n",UIP_IP_BUF->proto);
               printf("\n src:");
-              uip_debug_ipaddr_print(&UIP_IP_BUF->srcipaddr);
-             // PRINT6ADDR(&UIP_IP_BUF->srcipaddr); // printf("\t");
+             // uip_debug_ipaddr_print(&UIP_IP_BUF->srcipaddr);
+              PRINT6ADDR(&UIP_IP_BUF->srcipaddr); // printf("\t");
               printf("destination : ");
               PRINT6ADDR(&UIP_IP_BUF->destipaddr);     
-              printf("source port no %d\n ",uip_htons(UIP_UDP_BUF->srcport));  
-              printf("destination port %d \n",uip_htons(UIP_UDP_BUF->destport));
+          /*    printf("source port no %d\n ",uip_htons(UIP_UDP_BUF->srcport));  
+              printf("destination port %d \n",uip_htons(UIP_UDP_BUF->destport));*/
 		
-        /*      stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
-              stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;
-  	      stored_connections->individualconnections[i]->number_of_connections=1;
-	      stored_connections->individualconnections[i]->visited_address=1;*/
-                     //   already_visited_address=1;     
-            // printf("proto:UDP %d \n",UIP_IP_BUF->proto);
-            // printf("\n src:");
-            // uip_debug_ipaddr_print(&UIP_IP_BUF->srcipaddr);
-            // PRINT6ADDR(&UIP_IP_BUF->srcipaddr); // printf("\t");
-            //  printf("\ndestination : ");
-             // PRINT6ADDR(&UIP_IP_BUF->destipaddr);     
-              printf("\nsource port no %d ",uip_htons(UIP_UDP_BUF->srcport));  
-              printf("\ndestination port %d \n",uip_htons(UIP_UDP_BUF->destport));
-            
-  //          UIP_UDP_BUF->udpchksum = ~(uip_udpchksum());
-  	      
-	    /*  stored_connections->individualconnections[i]->remote_port=uip_htons(UIP_UDP_BUF->srcport);
-              stored_connections->individualconnections[i]->destination_port=uip_htons(UIP_UDP_BUF->destport);*/
-              
+                
 	      switch(uip_htons(UIP_UDP_BUF->destport))//stored_connections->individualconnections[i]->destination_port)
 	      {
 	     	
@@ -168,28 +155,19 @@ for(;i<=incoming_allowed_connections;i++)
 
               }
 
-             /* if(stored_connections->individualconnections[i]->destination_port=uip_htons(UIP_UDP_BUF->destport)= 5683)
-              {
-                 
-              
-              }*/
-              /*else if(UIP_UDP_BUF->destport == 4443)
-                   {
- 		      printf("DTLS request");
-                   }   */
-//	stored_connections->individualconnections[i]->connection_status=1;
-	
-  //      break;
-           
+             
         case UIP_PROTO_ICMP6:
 
 
-        printf("proto:ICMP %d \n",UIP_IP_BUF->proto);
-        printf("\n src");
+         printf("proto:ICMP %d \n",UIP_IP_BUF->proto);
+        printf("src ");
         PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
-        printf("\ndestination ");
+        printf("\n");
+        printf("destination ");
         PRINT6ADDR(&UIP_IP_BUF->destipaddr);
-       
+        printf("\n");
+        PRINTF("type %d \n ",UIP_ICMP_BUF->type);
+
 	switch(UIP_ICMP_BUF->type)
 
 	{
@@ -212,19 +190,16 @@ for(;i<=incoming_allowed_connections;i++)
 	case ICMP6_RPL          :
 	
 	break; 
+        
+        
                
-	
+	}
 
-        printf("\n type %d \n ",UIP_ICMP_BUF->type);
-        break;
-    }
+      break;
+  
     
-//}
+// }
 }
-
-/* stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
-              stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;*/
-
 
 
  if(address_mismatch() && udp_source_port_mismatch() )
@@ -237,27 +212,9 @@ for(;i<=incoming_allowed_connections;i++)
   {
             stored_connections->individualconnections[i]->number_of_succesful_connections+=1;
  }
-
-}
- /* for(i=0;i<=incoming_allowed_connections;i++)
-	{
-     
-     stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
-
-
-
-
-	}*/
-  
-
-            //  stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
-             // stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;
-
-
-    
-
-   return 1;
-}
+ 
+  return 1;
+  }
 
 void firewall_init(void) {
   PRINTF("Initializing firewall!\n");

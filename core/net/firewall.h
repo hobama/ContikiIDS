@@ -10,7 +10,7 @@
 
 /*#define SMALL_FILTERS 10
 #define GLOBAL_FILTERS 10*/
-#define incoming_allowed_connections 5
+#define incoming_allowed_connections 10
 #define unauthorized_addresses 10
 //#define successful_connections 10
 //#define dropped_packets 7
