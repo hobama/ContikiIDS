@@ -70,7 +70,7 @@ collect_common_set_sink(void)
 void
 collect_common_net_print(void)
 {
-  printf("I am sink!\n");
+  printf("I here am sink!\n");
 }
 /*---------------------------------------------------------------------------*/
 void
@@ -89,7 +89,7 @@ collect_common_net_init(void)
 #endif
   serial_line_init();
 
-  PRINTF("I am sink!\n");
+  PRINTF("I am here sink!\n");
 }
 /*---------------------------------------------------------------------------*/
 static void
