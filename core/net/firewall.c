@@ -86,7 +86,7 @@ int firewall_valid_packet(void)
 {
 
 	
-        
+     
        if( UIP_IP_BUF->ttl == 0)
         return;
         //already_visited_address=1;	
@@ -137,8 +137,13 @@ int firewall_valid_packet(void)
 	      switch(uip_htons(UIP_UDP_BUF->destport))//stored_connections->individualconnections[i]->destination_port)
 	      {
 	     	
-	      case 5683:
-
+	      case 5683:  
+        // if(message[0]->type == COAP_TYPE_CON) 
+    //    if(coap_packet_t->type == COAP_TYPE_CON)
+      //      if(coap_req->type == COAP_TYPE_CON)
+               printf("hi");
+               else
+               printf("hello");
 	      	//static coap_packet_t request[1];
 	//	send_ping(&UIP_IP_BUF->destipaddr);
                stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;

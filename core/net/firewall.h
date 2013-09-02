@@ -14,6 +14,8 @@
 #define unauthorized_addresses 10
 //#define successful_connections 10
 //#define dropped_packets 7
+#include "../apps/ids-common/ids-common.h"
+#include "../apps/er-coap-07/er-coap-07.h"
 
 
 // UIP_IP_BUF ((struct uip_ip_hdr *)&uip_buf[UIP_LLH_LEN])
@@ -26,7 +28,10 @@
 #define UIP_ICMP_BUF ((struct uip_icmp_hdr *)&uip_buf[uip_l2_l3_hdr_len])
 //dharmini
 
-
+//extern 
+//extern coap_message_type_t type;
+extern coap_status_t coap_error_code;
+extern char *coap_error_message;
 
 //uint16_t compress_ipaddr_t(uip_ipaddr_t * ipaddr) {
 //  return ipaddr->u16[7];
