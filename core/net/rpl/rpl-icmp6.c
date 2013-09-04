@@ -549,7 +549,7 @@ dio_output(rpl_instance_t *instance, uip_ipaddr_t *uc_addr)
 static void
 dao_input(void)
 {
-  printf("dao_input\n");
+ // printf("dao_input\n");
   uip_ipaddr_t dao_sender_addr;
   rpl_dag_t *dag;
   rpl_instance_t *instance;
@@ -704,7 +704,7 @@ dao_input(void)
 void
 dao_output(rpl_parent_t *n, uint8_t lifetime)
 {
-  printf("dao_output\n");
+ // printf("dao_output\n");
   rpl_dag_t *dag;
   rpl_instance_t *instance;
   unsigned char *buffer;

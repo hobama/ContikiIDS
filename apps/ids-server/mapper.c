@@ -42,9 +42,15 @@
 #include <string.h>
 #include <ctype.h>
 
-#define DEBUG DEBUG_PRINT
+#define DEBUG DEBUG_NONE
 #include "net/uip-debug.h"
 
+#include "dev/serial-line.h"
+#if CONTIKI_TARGET_Z1
+#include "dev/uart0.h"
+#else
+#include "dev/uart1.h"
+#endif
 #define INCONSISTENCY_THREASHOLD 2
 
 #define IDS_TEMP_ERROR 0x01
@@ -760,6 +766,16 @@ detect_inconsistencies()
   missing_ids_info();
 }
 
+void 
+ids_serial_init(void)
+{
+
+  uart1_set_input(serial_line_input_byte);
+
+  serial_line_init();
+
+}
+
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(mapper, ev, data)
 {
@@ -767,6 +783,8 @@ PROCESS_THREAD(mapper, ev, data)
   static int init = 1;
 
   PROCESS_BEGIN();
+
+  ids_serial_init();
 
   PROCESS_PAUSE();
 
@@ -797,13 +815,16 @@ PROCESS_THREAD(mapper, ev, data)
   network[0].id = compress_ipaddr_t(network[0].ip);
   ++node_index;
   //dharmini 
-  printf("nodes_index %d\n",node_index);
+//  printf("nodes_index %d\n",node_index);
 
   while(1) {
     PROCESS_YIELD();
     if(ev == tcpip_event) {
       tcpip_handler();
-    } else if(etimer_expired(&map_timer)) {
+    }else if (ev= serial_line_event_message && data != NULL)
+    {
+
+    }else if(etimer_expired(&map_timer)) {
       // Map the next DAG.
       if(working_host == 0 && etimer_expired(&host_timer)) {
 #if (DEBUG) & DEBUG_PRINT

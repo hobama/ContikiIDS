@@ -503,7 +503,7 @@ rpl_free_dag(rpl_dag_t *dag)
 rpl_parent_t *
 rpl_add_parent(rpl_dag_t *dag, rpl_dio_t *dio, uip_ipaddr_t *addr)
 {
-  printf("RPL add parent \n");
+ // printf("RPL add parent \n");
   rpl_parent_t *p;
 
   if(RPL_PARENT_COUNT(dag) == RPL_MAX_PARENTS_PER_DAG) {

@@ -110,7 +110,7 @@ rpl_add_route(rpl_dag_t *dag, uip_ipaddr_t *prefix, int prefix_len,
               uip_ipaddr_t *next_hop)
 {
 
-  printf("add route entry \n");
+ // printf("add route entry \n");
   uip_ds6_route_t *rep;
 
   rep = uip_ds6_route_lookup(prefix);

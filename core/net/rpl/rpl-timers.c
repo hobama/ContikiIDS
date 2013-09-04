@@ -132,7 +132,7 @@ handle_dio_timer(void *ptr)
 {
 
 
-  printf("handle dio timer\n");
+ // printf("handle dio timer\n");
   rpl_instance_t *instance;
 
   instance = (rpl_instance_t *)ptr;
@@ -202,7 +202,7 @@ rpl_reset_dio_timer(rpl_instance_t *instance)
 static void
 handle_dao_timer(void *ptr)
 {
-  printf("handle dao timer\n");
+ // printf("handle dao timer\n");
   rpl_instance_t *instance;
 
   instance = (rpl_instance_t *)ptr;
@@ -227,7 +227,7 @@ handle_dao_timer(void *ptr)
 void
 rpl_schedule_dao(rpl_instance_t *instance)
 {
-  printf("schedule dao\n");
+  //printf("schedule dao\n");
   clock_time_t expiration_time;
 
   expiration_time = etimer_expiration_time(&instance->dao_timer.etimer);
