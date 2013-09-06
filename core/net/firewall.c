@@ -141,10 +141,12 @@ int firewall_valid_packet(void)
 	     	
 	      case 5683:  
               PRINTF("COAP \n");
-              coap_error_code = coap_parse_message(message, uip_appdata, uip_datalen());
+            //  coap_error_code = coap_parse_message(message, uip_appdata, uip_datalen());
               message->buffer=uip_appdata;
               message->type = (COAP_HEADER_TYPE_MASK & message->buffer[0])>>COAP_HEADER_TYPE_POSITION;
-              PRINTF("t %u \n",message->type);
+              PRINTF("type %u \n",message->type);
+              message->code = message->buffer[1];
+              PRINTF("code %u \n",message->code);
            //	send_ping(&UIP_IP_BUF->destipaddr);
               stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
               stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;
@@ -152,6 +154,9 @@ int firewall_valid_packet(void)
               stored_connections->individualconnections[i]->visited_address=1;
               stored_connections->individualconnections[i]->remoteport=uip_htons(UIP_UDP_BUF->srcport);
               stored_connections->individualconnections[i]->destinationport=uip_htons(UIP_UDP_BUF->destport);
+              stored_connections->individualconnections[i]->connectiontype=message->type;
+              stored_connections->individualconnections[i]->protocol=UIP_IP_BUF->proto;
+
 	      break;	
 
 	      case 4443:
@@ -169,7 +174,11 @@ int firewall_valid_packet(void)
 
              
         case UIP_PROTO_ICMP6:
-        
+       /* stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
+        stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;*/
+       /* stored_connections->individualconnections[i]->number_of_connections+=1;
+        stored_connections->individualconnections[i]->visited_address=1;
+        stored_connections->individualconnections[i]->protocol=UIP_IP_BUF->proto;*/
         printf("proto:ICMP %d \n",UIP_IP_BUF->proto);
         printf("src ");
         PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
@@ -184,6 +193,7 @@ int firewall_valid_packet(void)
 	{
 	
 	case ICMP6_ECHO_REQUEST :
+        
 
 	case ICMP6_ECHO_REPLY   :
 	
@@ -223,7 +233,7 @@ int firewall_valid_packet(void)
   {
             stored_connections->individualconnections[i]->number_of_succesful_connections+=1;
  }
- 
+  i++;
   return 1;
   }
 

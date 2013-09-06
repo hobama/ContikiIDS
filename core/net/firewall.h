@@ -51,13 +51,14 @@ struct individual_ip_record_table_state
 {
 	uip_ipaddr_t *remote_address;
         uip_ipaddr_t *destination_address;
-        uint16_t remote_port;
-        uint16_t destination_port;
+        uint16_t remoteport;
+        uint16_t destinationport;
        	int number_of_connections;
 	int number_of_succesful_connections;
 	int number_of_bad_reported_connections;
 	int visited_address;
         int connectiontype;
+        uint8_t protocol;
  
 };
 struct recorded_state_table
