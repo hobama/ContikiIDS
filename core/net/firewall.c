@@ -39,6 +39,8 @@ struct recorded_state_table
 static struct  recorded_state_table stored_connections[incoming_allowed_connections];
 static struct  individual_ip_record_table_state invidual_entry [incoming_allowed_connections];
 static struct etimer displaytimer;
+static coap_packet_t message[1];
+coap_status_t coap_error_code = NO_ERROR;
 //static int counter_used;
 int i=0;
 
@@ -138,22 +140,27 @@ int firewall_valid_packet(void)
 	      {
 	     	
 	      case 5683:  
-        // if(message[0]->type == COAP_TYPE_CON) 
-    //    if(coap_packet_t->type == COAP_TYPE_CON)
-      //      if(coap_req->type == COAP_TYPE_CON)
-               printf("hi");
-               else
-               printf("hello");
-	      	//static coap_packet_t request[1];
-	//	send_ping(&UIP_IP_BUF->destipaddr);
-               stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
-               stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;
-               stored_connections->individualconnections[i]->number_of_connections+=1;
-               stored_connections->individualconnections[i]->visited_address=1;
-  
+              PRINTF("COAP \n");
+              coap_error_code = coap_parse_message(message, uip_appdata, uip_datalen());
+              message->buffer=uip_appdata;
+              message->type = (COAP_HEADER_TYPE_MASK & message->buffer[0])>>COAP_HEADER_TYPE_POSITION;
+              PRINTF("t %u \n",message->type);
+           //	send_ping(&UIP_IP_BUF->destipaddr);
+              stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
+              stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;
+              stored_connections->individualconnections[i]->number_of_connections+=1;
+              stored_connections->individualconnections[i]->visited_address=1;
+              stored_connections->individualconnections[i]->remoteport=uip_htons(UIP_UDP_BUF->srcport);
+              stored_connections->individualconnections[i]->destinationport=uip_htons(UIP_UDP_BUF->destport);
 	      break;	
 
 	      case 4443:
+              
+              stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
+              stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;
+              stored_connections->individualconnections[i]->number_of_connections+=1;
+              stored_connections->individualconnections[i]->visited_address=1;
+
 	      break;	
 
           
@@ -162,16 +169,15 @@ int firewall_valid_packet(void)
 
              
         case UIP_PROTO_ICMP6:
-
-
-         printf("proto:ICMP %d \n",UIP_IP_BUF->proto);
+        
+        printf("proto:ICMP %d \n",UIP_IP_BUF->proto);
         printf("src ");
         PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
         printf("\n");
         printf("destination ");
         PRINT6ADDR(&UIP_IP_BUF->destipaddr);
         printf("\n");
-        PRINTF("type %d \n ",UIP_ICMP_BUF->type);
+       // PRINTF("type %d \n ",UIP_ICMP_BUF->type);
 
 	switch(UIP_ICMP_BUF->type)
 

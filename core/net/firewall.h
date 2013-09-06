@@ -57,7 +57,7 @@ struct individual_ip_record_table_state
 	int number_of_succesful_connections;
 	int number_of_bad_reported_connections;
 	int visited_address;
-        //  connection_status;
+        int connectiontype;
  
 };
 struct recorded_state_table
