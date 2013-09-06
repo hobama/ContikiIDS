@@ -418,7 +418,7 @@ uip_ds6_nbr_ll_lookup(uip_lladdr_t *lladdr)
 uip_ds6_defrt_t *
 uip_ds6_defrt_add(uip_ipaddr_t *ipaddr, unsigned long interval)
 {
-  printf("Adding defrouter with ip addr ");
+ // printf("Adding defrouter with ip addr ");
  
   if(uip_ds6_list_loop
      ((uip_ds6_element_t *)uip_ds6_defrt_list, UIP_DS6_DEFRT_NB,
@@ -804,7 +804,7 @@ uip_ds6_route_add(uip_ipaddr_t *ipaddr, uint8_t length, uip_ipaddr_t *nexthop,
                   uint8_t metric)
 {
 
-  printf("route addition\n");
+//  printf("route addition\n");
   if(uip_ds6_list_loop
      ((uip_ds6_element_t *)uip_ds6_routing_table, UIP_DS6_ROUTE_NB,
       sizeof(uip_ds6_route_t), ipaddr, length,
