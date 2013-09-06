@@ -110,7 +110,7 @@ update_metric(const rimeaddr_t *dest, int packet_metric)
  
     if(new_metric != recorded_metric && subscriber_callback != NULL) {
       subscriber_callback(dest, 1, new_metric);
-     printf("suscrber call back %d \n");
+    // printf("suscrber call back %d \n");
     }
   }
 }

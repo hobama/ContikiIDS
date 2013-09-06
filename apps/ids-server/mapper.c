@@ -42,7 +42,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#define DEBUG DEBUG_NONE
+#define DEBUG DEBUG_PRINT
 #include "net/uip-debug.h"
 
 #include "dev/serial-line.h"
@@ -766,7 +766,7 @@ detect_inconsistencies()
   missing_ids_info();
 }
 
-void 
+/*void 
 ids_serial_init(void)
 {
 
@@ -774,7 +774,7 @@ ids_serial_init(void)
 
   serial_line_init();
 
-}
+}*/
 
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(mapper, ev, data)
@@ -784,7 +784,7 @@ PROCESS_THREAD(mapper, ev, data)
 
   PROCESS_BEGIN();
 
-  ids_serial_init();
+//  ids_serial_init();
 
   PROCESS_PAUSE();
 
@@ -821,9 +821,6 @@ PROCESS_THREAD(mapper, ev, data)
     PROCESS_YIELD();
     if(ev == tcpip_event) {
       tcpip_handler();
-    }else if (ev= serial_line_event_message && data != NULL)
-    {
-
     }else if(etimer_expired(&map_timer)) {
       // Map the next DAG.
       if(working_host == 0 && etimer_expired(&host_timer)) {
