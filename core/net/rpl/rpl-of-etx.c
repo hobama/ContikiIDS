@@ -90,11 +90,11 @@ calculate_path_metric(rpl_parent_t *p)
    return  p->mc.obj.etx = 0;
   }
 
- /* if(node_id == 8)
+  if(node_id == 8)
   {
 
    return  p->mc.obj.etx = 128;
-  }*/
+  }
 
   //printf("before p->link_metric %u p->mc.obj.etx %u parent__rank %u ROOT_RANK(p->dag->instance) %u \n",p->link_metric,p->mc.obj.etx,p->rank,ROOT_RANK(p->dag->instance));
 

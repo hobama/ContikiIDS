@@ -675,7 +675,7 @@ int correct_rank_inconsistencies(void) {
       else
         diff = network[i].neighbor[j].rank - network[i].neighbor[j].node->rank ;
 
-      // If the absolute difference is > 20% of the ranks averages.
+      //  If the absolute difference is > 20% of the ranks averages.
       // (r1+r2)/2*0.2 => (r1+r2)/10
       if (diff > (network[i].neighbor[j].rank + network[i].neighbor[j].node->rank)/10) {
         PRINTF("Node %d is claiming node %d has rank %d, while it claims it has %d\n",
@@ -755,6 +755,14 @@ int detect_correct_rank_inconsistencies(void) {
   return status;
 }
 
+int check_child_parent_etx_relation(void)
+{
+
+printf("%d",node_index);
+
+
+}
+
 /**
  * Run the intrusion detection rules
  */
@@ -764,6 +772,7 @@ detect_inconsistencies()
   detect_correct_rank_inconsistencies();
   check_child_parent_relation();
   missing_ids_info();
+  check_child_parent_etx_relation();
 }
 
 /*void 
