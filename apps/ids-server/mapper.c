@@ -311,8 +311,7 @@ print_subtree(struct Node *node, int depth)
   printf("}\n");
 
   for(i = 0; i < node->neighbors; ++i) {
-    if(node->neighbor[i].node->parent != NULL &&
-            uip_ipaddr_cmp(node->neighbor[i].node->parent->ip, node->ip))
+    if(node->neighbor[i].node->parent != NULL && uip_ipaddr_cmp(node->neighbor[i].node->parent->ip, node->ip))
       print_subtree(node->neighbor[i].node, depth + 1);
   }
 }
@@ -458,8 +457,7 @@ int timestamp_outdated(uint8_t ts, uint8_t margin) {
     return 0;
 }
 
-/**
- * Check if a Node structure is valid and up to date
+d
  */
 int valid_node(struct Node * node) {
   return node->timestamp != 0 && !timestamp_outdated(node->timestamp,
@@ -755,13 +753,13 @@ int detect_correct_rank_inconsistencies(void) {
   return status;
 }
 
-int check_child_parent_etx_relation(void)
+/*int check_child_parent_etx_relation(void)
 {
 
 printf("%d",node_index);
 
 
-}
+}*/
 
 /**
  * Run the intrusion detection rules
@@ -772,7 +770,7 @@ detect_inconsistencies()
   detect_correct_rank_inconsistencies();
   check_child_parent_relation();
   missing_ids_info();
-  check_child_parent_etx_relation();
+//  check_child_parent_etx_relation();
 }
 
 /*void 

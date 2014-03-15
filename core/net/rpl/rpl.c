@@ -212,7 +212,7 @@ void
 rpl_init(void)
 {
   uip_ipaddr_t rplmaddr;
-  PRINTF("RPL started\n");
+//  PRINTF("RPL started\n");
   default_instance = NULL;
 
   rpl_reset_periodic_timer();
