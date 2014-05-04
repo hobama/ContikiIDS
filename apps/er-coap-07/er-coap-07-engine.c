@@ -44,7 +44,7 @@
 
 #include "er-coap-07-engine.h"
 
-#define DEBUG 0 
+#define DEBUG 1 
 #if DEBUG
 #define PRINTF(...) printf(__VA_ARGS__)
 #define PRINT6ADDR(addr) PRINTF("[%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x:%02x%02x]", ((uint8_t *)addr)[0], ((uint8_t *)addr)[1], ((uint8_t *)addr)[2], ((uint8_t *)addr)[3], ((uint8_t *)addr)[4], ((uint8_t *)addr)[5], ((uint8_t *)addr)[6], ((uint8_t *)addr)[7], ((uint8_t *)addr)[8], ((uint8_t *)addr)[9], ((uint8_t *)addr)[10], ((uint8_t *)addr)[11], ((uint8_t *)addr)[12], ((uint8_t *)addr)[13], ((uint8_t *)addr)[14], ((uint8_t *)addr)[15])
@@ -102,9 +102,9 @@ coap_receive(void)
 
       /*TODO duplicates suppression, if required by application */
 
-      PRINTF("  Parsed: v %u, t %u, oc %u, c %u, mid %u\n", message->version, message->type, message->option_count, message->code, message->mid);
-      PRINTF("  URL: %.*s\n", message->uri_path_len, message->uri_path);
-      PRINTF("  Payload: %.*s\n", message->payload_len, message->payload);
+//      PRINTF("  Parsed: v %u, t %u, oc %u, c %u, mid %u\n", message->version, message->type, message->option_count, message->code, message->mid);
+ //     PRINTF("  URL: %.*s\n", message->uri_path_len, message->uri_path);
+  //    PRINTF("  Payload: %.*s\n", message->payload_len, message->payload);
 
       /* Handle requests. */
       if (message->code >= COAP_GET && message->code <= COAP_DELETE)
@@ -139,7 +139,7 @@ coap_receive(void)
           /* get offset for blockwise transfers */
           if (coap_get_header_block2(message, &block_num, NULL, &block_size, &block_offset))
           {
-              PRINTF("Blockwise: block request %lu (%u/%u) @ %lu bytes\n", block_num, block_size, REST_MAX_CHUNK_SIZE, block_offset);
+   //           PRINTF("Blockwise: block request %lu (%u/%u) @ %lu bytes\n", block_num, block_size, REST_MAX_CHUNK_SIZE, block_offset);
               block_size = MIN(block_size, REST_MAX_CHUNK_SIZE);
               new_offset = block_offset;
           }
@@ -155,7 +155,7 @@ coap_receive(void)
                 /* Apply blockwise transfers. */
                 if ( IS_OPTION(message, COAP_OPTION_BLOCK1) && response->code<BAD_REQUEST_4_00 && !IS_OPTION(response, COAP_OPTION_BLOCK1) )
                 {
-                  PRINTF("Block1 NOT IMPLEMENTED\n");
+     //             PRINTF("Block1 NOT IMPLEMENTED\n");
 
                   coap_error_code = NOT_IMPLEMENTED_5_01;
                   coap_error_message = "NoBlock1Support";
@@ -165,10 +165,10 @@ coap_receive(void)
                   /* unchanged new_offset indicates that resource is unaware of blockwise transfer */
                   if (new_offset==block_offset)
                   {
-                    PRINTF("Blockwise: unaware resource with payload length %u/%u\n", response->payload_len, block_size);
+           //         PRINTF("Blockwise: unaware resource with payload length %u/%u\n", response->payload_len, block_size);
                     if (block_offset >= response->payload_len)
                     {
-                      PRINTF("handle_incoming_data(): block_offset >= response->payload_len\n");
+             //         PRINTF("handle_incoming_data(): block_offset >= response->payload_len\n");
 
                       response->code = BAD_OPTION_4_02;
                       coap_set_payload(response, "BlockOutOfScope", 15); /* a const char str[] and sizeof(str) produces larger code size */
@@ -182,14 +182,14 @@ coap_receive(void)
                   else
                   {
                     /* resource provides chunk-wise data */
-                    PRINTF("Blockwise: blockwise resource, new offset %ld\n", new_offset);
+               //     PRINTF("Blockwise: blockwise resource, new offset %ld\n", new_offset);
                     coap_set_header_block2(response, block_num, new_offset!=-1 || response->payload_len > block_size, block_size);
                     if (response->payload_len > block_size) coap_set_payload(response, response->payload, block_size);
                   } /* if (resource aware of blockwise) */
                 }
                 else if (new_offset!=0)
                 {
-                  PRINTF("Blockwise: no block option for blockwise resource, using block size %u\n", REST_MAX_CHUNK_SIZE);
+                 // PRINTF("Blockwise: no block option for blockwise resource, using block size %u\n", REST_MAX_CHUNK_SIZE);
 
                   coap_set_header_block2(response, 0, new_offset!=-1, REST_MAX_CHUNK_SIZE);
                   coap_set_payload(response, response->payload, MIN(response->payload_len, REST_MAX_CHUNK_SIZE));
@@ -257,12 +257,12 @@ coap_receive(void)
     }
     else if (coap_error_code==MANUAL_RESPONSE)
     {
-      PRINTF("Clearing transaction for manual response");
+  //    PRINTF("Clearing transaction for manual response");
       coap_clear_transaction(transaction);
     }
     else
     {
-      PRINTF("ERROR %u: %s\n", coap_error_code, coap_error_message);
+    //  PRINTF("ERROR %u: %s\n", coap_error_code, coap_error_message);
       coap_clear_transaction(transaction);
 
       /* Set to sendable error code. */
@@ -324,7 +324,7 @@ well_known_core_handler(void* request, void* response, uint8_t *buffer, uint16_t
         continue;
       }
 
-      PRINTF("res: /%s (%p)\npos: s%d, o%d, b%d\n", resource->url, resource, strpos, *offset, bufpos);
+     // PRINTF("res: /%s (%p)\npos: s%d, o%d, b%d\n", resource->url, resource, strpos, *offset, bufpos);
 
       if (strpos >= *offset && bufpos < preferred_size)
       {
@@ -390,7 +390,7 @@ well_known_core_handler(void* request, void* response, uint8_t *buffer, uint16_t
       /* buffer full, but resource not completed yet; or: do not break if resource exactly fills buffer. */
       if (bufpos >= preferred_size && strpos-bufpos > *offset)
       {
-        PRINTF("res: BREAK at %s (%p)\n", resource->url, resource);
+       // PRINTF("res: BREAK at %s (%p)\n", resource->url, resource);
         break;
       }
     }
@@ -415,7 +415,7 @@ well_known_core_handler(void* request, void* response, uint8_t *buffer, uint16_t
     }
     else
     {
-      PRINTF("res: MORE at %s (%p)\n", resource->url, resource);
+     // PRINTF("res: MORE at %s (%p)\n", resource->url, resource);
       *offset += preferred_size;
     }
 }
@@ -486,19 +486,19 @@ PT_THREAD(coap_blocking_request(struct request_state_t *state, process_event_t e
       state->transaction->packet_len = coap_serialize_message(request, state->transaction->packet);
 
       coap_send_transaction(state->transaction);
-      PRINTF("Requested #%lu (MID %u)\n", state->block_num, request->mid);
+     // PRINTF("Requested #%lu (MID %u)\n", state->block_num, request->mid);
 
       PT_YIELD_UNTIL(&state->pt, ev == PROCESS_EVENT_POLL);
 
       if (!state->response)
       {
-        PRINTF("Server not responding\n");
+       // PRINTF("Server not responding\n");
         PT_EXIT(&state->pt);
       }
 
       coap_get_header_block2(state->response, &res_block, &more, NULL, NULL);
 
-      PRINTF("Received #%lu%s (%u bytes)\n", res_block, more ? "+" : "", state->response->payload_len);
+     // PRINTF("Received #%lu%s (%u bytes)\n", res_block, more ? "+" : "", state->response->payload_len);
 
       if (res_block==state->block_num)
       {
@@ -507,13 +507,13 @@ PT_THREAD(coap_blocking_request(struct request_state_t *state, process_event_t e
       }
       else
       {
-        PRINTF("WRONG BLOCK %lu/%lu\n", res_block, state->block_num);
+       // PRINTF("WRONG BLOCK %lu/%lu\n", res_block, state->block_num);
         ++block_error;
       }
     }
     else
     {
-      PRINTF("Could not allocate transaction buffer");
+     // PRINTF("Could not allocate transaction buffer");
       PT_EXIT(&state->pt);
     }
   } while (more && block_error<COAP_MAX_ATTEMPTS);

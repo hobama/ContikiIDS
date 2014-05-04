@@ -77,7 +77,9 @@ coap_register_as_transaction_handler()
 coap_transaction_t *
 coap_new_transaction(uint16_t mid, uip_ipaddr_t *addr, uint16_t port)
 {
-  coap_transaction_t *t = memb_alloc(&transactions_memb);
+ 
+printf("\n new_transcation");
+ coap_transaction_t *t = memb_alloc(&transactions_memb);
 
   if (t)
   {
@@ -97,7 +99,8 @@ coap_new_transaction(uint16_t mid, uip_ipaddr_t *addr, uint16_t port)
 void
 coap_send_transaction(coap_transaction_t *t)
 {
-  PRINTF("Sending transaction %u\n", t->mid);
+//  printf("sending transaction");
+   PRINTF("Sending transaction %u\n", t->mid);
 
   coap_send_message(&t->addr, t->port, t->packet, t->packet_len);
 
