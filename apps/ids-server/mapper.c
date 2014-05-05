@@ -339,7 +339,7 @@ print_graph()
 void
 tcpip_handler()
 {
-  uint8_t *appdata,child_nodes=0;
+  uint8_t *appdata;
   uint16_t src_id, parent_id, dag_id;
   uint8_t rpl_instance_id, version_recieved, timestamp_recieved;
 
@@ -457,8 +457,7 @@ int timestamp_outdated(uint8_t ts, uint8_t margin) {
     return 0;
 }
 
-d
- */
+
 int valid_node(struct Node * node) {
   return node->timestamp != 0 && !timestamp_outdated(node->timestamp,
       MAPPING_RECENT_WINDOW*2);
