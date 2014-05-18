@@ -145,7 +145,7 @@ int firewall_valid_packet(void)
               message->buffer=uip_appdata;
               message->type = (COAP_HEADER_TYPE_MASK & message->buffer[0])>>COAP_HEADER_TYPE_POSITION;
               PRINTF("type %u \n",message->type);
-              if(message->type==COAP_TYPE_ACK)
+              if(message->type==COAP_TYPE_ACK ||message->type==COAP_TYPE_NON)
               {
                 PRINTF("type %u \n",message->type);
               }
