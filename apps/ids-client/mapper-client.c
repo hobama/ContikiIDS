@@ -43,7 +43,7 @@ tcpip_handler(void)
     MAPPER_GET_PACKETDATA(dag_id, in_data);
     MAPPER_GET_PACKETDATA(version, in_data);
     MAPPER_GET_PACKETDATA(timestamp, in_data);
-    MAPPER_GET_PACKETDATA(etx, in_data);
+//    MAPPER_GET_PACKETDATA(etx, in_data);
     //dharmini
     //printf("dharmini-");
    // PRINTF("DEBUG %s:%d\n",__FUNCTION__,__LINE__);
@@ -67,7 +67,7 @@ tcpip_handler(void)
             // Dag Ver.  (uint8_t) | Timestamp (uint8_t) | Rank (uint16_t) |etx(uint16_t)
             // Parent IP (uint16_t) | #neighbors (uint16_t) | NEIGHBORS
             //
-            // NEIGHBORS = Neighbor ID (uint16_t) | Neighbor rank (uint16_t)
+            // NEIGHBORS = Neighbor ID (uint16_t) | Neighbor rank (uint16_t) | Neighbor etx (uint16_t)
 
             // calculate size of out_data
             int outdata_size =
