@@ -22,8 +22,6 @@ AUTOSTART_PROCESSES(&mapper_client);
 static void
 tcpip_handler(void)
 {
-
- 
   static int i, j;
   uint16_t tmp_id;
   PRINTF("tcpip_handler()\n");
@@ -33,21 +31,14 @@ tcpip_handler(void)
     uint8_t timestamp;
     uint16_t dag_id;
     uint8_t version;
-    uint16_t etx;
     PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
-    PRINTF("the address inserted was \n");
-   /* //dharmini PRINTF("DEBUG %s:%d\n",__FUNCTION__,__LINE__);*/
+    PRINTF("\n");
     unsigned char * in_data = uip_appdata;
-   
     MAPPER_GET_PACKETDATA(instance_id, in_data);
     MAPPER_GET_PACKETDATA(dag_id, in_data);
     MAPPER_GET_PACKETDATA(version, in_data);
     MAPPER_GET_PACKETDATA(timestamp, in_data);
-//    MAPPER_GET_PACKETDATA(etx, in_data);
-    //dharmini
-    //printf("dharmini-");
-   // PRINTF("DEBUG %s:%d\n",__FUNCTION__,__LINE__);
-    
+
     // Go through all RPL instances
     for (i = 0; i < RPL_MAX_INSTANCES; ++i) {
       if (instance_table[i].used && instance_table[i].instance_id == instance_id) {
@@ -64,23 +55,22 @@ tcpip_handler(void)
             // rpl_rank_t is a uint16_t
             //
             // My IP (uint16_t) | IID (uint8_t) | DAG ID (ipaddr_t) |
-            // Dag Ver.  (uint8_t) | Timestamp (uint8_t) | Rank (uint16_t) |etx(uint16_t)
+            // Dag Ver.  (uint8_t) | Timestamp (uint8_t) | Rank (uint16_t) |
             // Parent IP (uint16_t) | #neighbors (uint16_t) | NEIGHBORS
             //
-            // NEIGHBORS = Neighbor ID (uint16_t) | Neighbor rank (uint16_t) | Neighbor etx (uint16_t)
+            // NEIGHBORS = Neighbor ID (uint16_t) | Neighbor rank (uint16_t)
 
             // calculate size of out_data
             int outdata_size =
-              sizeof(uint16_t) + sizeof(instance_id) + sizeof(dag_id) + sizeof(version) +
-              sizeof(version) + sizeof(timestamp) + sizeof(rpl_rank_t) +
-              sizeof(uint16_t) + sizeof(uint16_t)+sizeof(etx);
+              sizeof(uint16_t) + sizeof(instance_id) + sizeof(dag_id) + sizeof(version) + sizeof(timestamp) + sizeof(rpl_rank_t) +
+              sizeof(uint16_t) + sizeof(uint16_t);
 
             rpl_parent_t *p;
             for(p = list_head(instance_table[i].dag_table[j].parents);
                 p != NULL; p = list_item_next(p)) {
               if (p->rank == -1)
                 continue;
-              outdata_size += sizeof(uint16_t) + sizeof(rpl_rank_t)+sizeof(etx);
+              outdata_size += sizeof(uint16_t) + sizeof(rpl_rank_t);
             }
 
             unsigned char out_data[outdata_size];
@@ -93,14 +83,12 @@ tcpip_handler(void)
             // My IP adress
             tmp_id = compress_ipaddr_t(myip);
             MAPPER_ADD_PACKETDATA(out_data_p, tmp_id);
-     
+
             // RPL Instance ID | DODAG ID | DODAG Version Number | Timestamp
             MAPPER_ADD_PACKETDATA(out_data_p, instance_id);
             MAPPER_ADD_PACKETDATA(out_data_p, dag_id);
             MAPPER_ADD_PACKETDATA(out_data_p, version);
             MAPPER_ADD_PACKETDATA(out_data_p, timestamp);
-//dharmini//
-            MAPPER_ADD_PACKETDATA(out_data_p, etx);
 
             // My rank
             MAPPER_ADD_PACKETDATA(out_data_p, instance_table[i].dag_table[j].rank);
@@ -132,7 +120,7 @@ tcpip_handler(void)
               PRINTF(" got rank %d\n", p->rank);
             }
             PRINTF("%d neighbors\n", *neighbors);
-        //    printf("dharmini");
+
             uip_udp_packet_sendto(mapper_conn, out_data, sizeof(out_data), &UIP_IP_BUF->srcipaddr, UIP_HTONS(MAPPER_SERVER_PORT));
             break;
           }
@@ -142,7 +130,6 @@ tcpip_handler(void)
     }
     /* Ignore incoming data */
   }
-    
 }
 
 PROCESS_THREAD(mapper_client, ev, data)
@@ -159,8 +146,8 @@ PROCESS_THREAD(mapper_client, ev, data)
   PRINTF("Created a connection with the server ");
   PRINT6ADDR(&mapper_conn->ripaddr);
   PRINTF(" local/remote port %u/%u\n", UIP_HTONS(mapper_conn->lport),
-   UIP_HTONS(mapper_conn->rport));
-  
+      UIP_HTONS(mapper_conn->rport));
+
   while(1) {
     PROCESS_YIELD();
     if(ev == tcpip_event) {
