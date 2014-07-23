@@ -45,11 +45,18 @@
 #define DEBUG DEBUG_PRINT
 #include "net/uip-debug.h"
 
+#include "dev/serial-line.h"
+#if CONTIKI_TARGET_Z1
+#include "dev/uart0.h"
+#else
+#include "dev/uart1.h"
+#endif
 #define INCONSISTENCY_THREASHOLD 2
 
 #define IDS_TEMP_ERROR 0x01
 #define IDS_RANK_ERROR 0x02
 #define IDS_RELATIVE_ERROR 0x04
+#define IDS_TEMP_ERROR_ETX 0x05
 
 /**
  * Connection for incoming IDS information packets
@@ -122,6 +129,14 @@ struct Neighbor {
    * The rank of the node
    */
   rpl_rank_t rank;
+  //dharmini
+ /**
+ * etx of the node and neighboring nodes
+ */
+ //rpl_metric_container_t mc;
+rpl_metric_container_t etcob;
+//struct rpl_metric_container mc;
+
 };
 
 /**
@@ -132,7 +147,8 @@ struct Node {
    * IP address of this node
    */
   uip_ipaddr_t *ip;
-
+  
+//  uip_ipaddr_t *children[UIP_DS6_ROUTE_NB]; 
   /**
    * The compressed IP of the node works as its ID
    */
@@ -174,6 +190,16 @@ struct Node {
    * between analysis for different checks
    */
   uint8_t status;
+  //dharmini
+ /**
+ * etx of the node and neighboring nodes
+ */
+// struct rpl_metric_container mc;
+ rpl_metric_container_t etcob;
+
+//kiwi
+ //uint8_t hops;
+
 };
 
 /**
@@ -185,7 +211,6 @@ static struct Node network[NETWORK_NODES];
  * The length of the node list (network)
  */
 static int node_index = 0;
-
 /**
  * Search for a node by ID
  *
@@ -225,10 +250,11 @@ add_node(uint16_t id)
 
   if(node != NULL)
     return node;
+   printf("node _ index : %d", node_index);
 
   if(node_index >= NETWORK_NODES) {     // Out of memory
     PRINTF("Out of memory\n");
-    return NULL;
+  return NULL;
   }
 
   int i;
@@ -262,10 +288,12 @@ void
 print_subtree(struct Node *node, int depth)
 {
   int i;
-
+  
   printf("%*s", depth * 2, "");
 
   uip_debug_ipaddr_print(node->ip);
+  
+
 
   if(node->visited) {
     printf("\n");
@@ -273,19 +301,26 @@ print_subtree(struct Node *node, int depth)
   }
   node->visited = 1;
 
-  printf(" (t: %d, p: %x, r: %d) ", node->timestamp, node->parent_id, node->rank);
 
+  // PRINT6ADDR(&node->ip);
+  
+ PRINTF("nodeetx \n %u",node->etcob.obj.etx);
+  //dharmini
+ // printf(" (t: %d, p: %x, r: %d ) ", node->timestamp, node->parent_id, node->rank);
+  printf(" (t: %d, p: %x, r: %d,e: %d) ", node->timestamp, node->parent->parent_id, node->rank, node->etcob.obj.etx);
+
+  //print_routing_table();
   printf("    {");
+//  printf("dharmini");
 
   for(i = 0; i < node->neighbors; ++i) {
     uip_debug_ipaddr_print(node->neighbor[i].node->ip);
-    printf(" (%d) ,", node->neighbor[i].rank);
+    printf("( r :%d,  e: %d )" , node->neighbor[i].rank,node->neighbor[i].node->etcob.obj.etx);
   }
   printf("}\n");
 
   for(i = 0; i < node->neighbors; ++i) {
-    if(node->neighbor[i].node->parent != NULL &&
-            uip_ipaddr_cmp(node->neighbor[i].node->parent->ip, node->ip))
+    if(node->neighbor[i].node->parent != NULL && uip_ipaddr_cmp(node->neighbor[i].node->parent->ip, node->ip))
       print_subtree(node->neighbor[i].node, depth + 1);
   }
 }
@@ -307,7 +342,7 @@ print_graph()
     if(!network[i].visited)
       print_subtree(&network[i], 0);
   }
-  printf("-----------------------\n");
+//  printf("-----------------------\n");
 }
 
 void
@@ -320,8 +355,10 @@ tcpip_handler()
   struct Node *id, *parent;
   uint16_t neighbors;
   uint16_t neighbor_id;
+//kiwi
+ uint8_t hops;
   int i;
-
+  
   if(!uip_newdata())
     return;
 
@@ -331,8 +368,8 @@ tcpip_handler()
 
   appdata = (uint8_t *) uip_appdata;
   MAPPER_GET_PACKETDATA(src_id, appdata);
-
-  PRINTF("Source ID: %x\n", src_id);
+  
+//  PRINTF("Source ID: %x\n", src_id);
 
   id = add_node(src_id);
   if(id == NULL)
@@ -342,16 +379,16 @@ tcpip_handler()
   PRINT6ADDR(id->ip);
   PRINTF("\n");
 
-  // RPL Instance ID | DODAG ID | DAG Version | Timestamp
+  // RPL Instance ID | DODAG ID | DAG Version | Timestamp | 
 
   MAPPER_GET_PACKETDATA(rpl_instance_id, appdata);
 
   MAPPER_GET_PACKETDATA(dag_id, appdata);
 
   if (dag_id != compress_ipaddr_t(&current_dag->dag_id)) {
-    PRINTF("Mapping information received which does not match our current");
-    PRINTF("DODAG, information ignored (got %x while expecting %x)\n", dag_id,
-        compress_ipaddr_t(&current_dag->dag_id));
+  //  PRINTF("Mapping information received which does not match our current");
+   // PRINTF("DODAG, information ignored (got %x while expecting %x)\n", dag_id,
+     //   compress_ipaddr_t(&current_dag->dag_id));
     return;
   }
 
@@ -367,11 +404,15 @@ tcpip_handler()
     PRINTF("got %d while expecting %d\n", timestamp_recieved, timestamp);
     return;
   }
-
+  
   id->timestamp = timestamp_recieved;
-
+   
   // Rank
   MAPPER_GET_PACKETDATA(id->rank, appdata);
+// 
+//papaya
+  MAPPER_GET_PACKETDATA(id->etcob.obj.etx, appdata);
+  PRINTF("received etx value %d",id->etcob.obj.etx);
 
   // Parent
   MAPPER_GET_PACKETDATA(parent_id, appdata);
@@ -385,6 +426,7 @@ tcpip_handler()
 
   id->parent = parent;
 
+ 
   // Get the number of neighbors
   MAPPER_GET_PACKETDATA(neighbors, appdata);
 
@@ -395,11 +437,22 @@ tcpip_handler()
     id->neighbor[i].node = add_node(neighbor_id);
 
     MAPPER_GET_PACKETDATA(id->neighbor[i].rank, appdata);
+    //MAPPER_GET_PACKETDATA(id->neighbor[i].etcob.obj.etx, appdata);
 
     if(parent->id == neighbor_id)
       id->parent_id = i;
+
+    //dharmini
+//papaya
+ MAPPER_GET_PACKETDATA(id->neighbor[i].etcob.obj.etx, appdata);
+// MAPPER_GET_PACKETDATA(id->hops, appdata);
+
   }
+  
   id->neighbors = neighbors;
+//kiwi
+  hops = uip_ds6_if.cur_hop_limit - UIP_IP_BUF->ttl + 1;
+  PRINTF("hops of the node %d \n",hops);
 }
 
 /**
@@ -420,9 +473,7 @@ int timestamp_outdated(uint8_t ts, uint8_t margin) {
     return 0;
 }
 
-/**
- * Check if a Node structure is valid and up to date
- */
+
 int valid_node(struct Node * node) {
   return node->timestamp != 0 && !timestamp_outdated(node->timestamp,
       MAPPING_RECENT_WINDOW*2);
@@ -455,10 +506,11 @@ map_network()
 
   if (uip_ds6_routing_table[working_host].isused &&
       timestamp_outdated(node->timestamp, MAPPING_RECENT_WINDOW)) {
-    // RPL Instance ID | DAG ID (compressed, uint16_t) | DAG Version | timestamp
+    // RPL Instance ID | DAG ID (compressed, uint16_t) | DAG Version | timestamp 
     static char data[sizeof(current_rpl_instance_id) +
       sizeof(uint16_t) + sizeof(current_dag->version) +
       sizeof(timestamp)];
+
     void *data_p = data;
     uint16_t tmp;
 
@@ -467,6 +519,8 @@ map_network()
     MAPPER_ADD_PACKETDATA(data_p, tmp);
     MAPPER_ADD_PACKETDATA(data_p, current_dag->version);
     MAPPER_ADD_PACKETDATA(data_p, timestamp);
+   
+    
 
     PRINTF("sending data to: %2d ", working_host);
     PRINT6ADDR(&uip_ds6_routing_table[working_host].ipaddr);
@@ -503,6 +557,14 @@ check_child_parent_relation()
         // network[i].neighbor[network[i].parent_id].rank +
         // rpl_get_instance(current_rpl_instance_id)->min_hoprankinc) {
 
+
+    /* PRINTF("network[%d].rank %u \n",i,network[i].rank);
+     PRINTF("network[%d].ip",i);
+     PRINT6ADDR(network[i].ip);
+     PRINTF("parentid_rank %u \n",network[i].neighbor[network[i].parent_id].rank);
+     PRINT6ADDR(network[i].neighbor[network[i].parent_id].node->ip);
+     PRINTF("\n");*/
+
     if(network[i].rank < network[i].neighbor[network[i].parent_id].rank +
         rpl_get_instance(current_rpl_instance_id)->min_hoprankinc) {
       network[i].status |= IDS_TEMP_ERROR;
@@ -517,7 +579,7 @@ check_child_parent_relation()
     if((network[i].status & (IDS_TEMP_ERROR | IDS_RELATIVE_ERROR)) ==
         (IDS_TEMP_ERROR | IDS_RELATIVE_ERROR)) {
       if (status == 0)
-        printf("The following nodes has advertised incorrect routes:\n");
+       PRINTF("The following nodes has advertised incorrect routes:\n");
 
       uip_debug_ipaddr_print(network[i].ip);
       printf(" (%d)\n", network[i].rank);
@@ -538,6 +600,71 @@ check_child_parent_relation()
   return status;
 }
 
+
+/*int check_child_parent_etx_relation(void)
+{
+int status = 0;
+  int i;
+
+  for(i = 0; i < node_index; ++i) {
+    if (!valid_node(&network[i]))
+      continue;
+     
+printf("etx_dharmini1 etxofnode %u,rankofnode %u,etxofparent %u,rankofparent %d,i %d \n",network[i].etcob.obj.etx,network[i].rank,network[i].neighbor[network[i].parent_id].etcob.obj.etx,network[i].neighbor[network[i].parent_id].rank,i);
+ //zebra
+   
+    
+    PRINTF("node address");
+    uip_debug_ipaddr_print(network[i].ip);
+    PRINTF("\n");
+    
+    PRINTF("node  parent address");
+    uip_debug_ipaddr_print(network[i].neighbor[network[i].parent_id].node->ip);
+    PRINTF("\n");
+    
+    PRINTF("node  neighbor");
+    uip_debug_ipaddr_print(network[i].neighbor[i].node->ip);
+    PRINTF("\n");
+      
+    if(network[i].etcob.obj.etx < network[i].neighbor[network[i].parent_id].etcob.obj.etx && (network[i].etcob.obj.etx ==0))
+        {
+    	      
+       network[i].status |= IDS_TEMP_ERROR_ETX;
+      network[i].neighbor[network[i].parent_id].node->status |= IDS_TEMP_ERROR_ETX;
+    }
+  }
+  for(i = 0; i < node_index; ++i) {
+    if (!valid_node(&network[i]))
+      continue;
+     
+    if((network[i].status & (IDS_TEMP_ERROR_ETX | IDS_RELATIVE_ERROR)) ==
+        (IDS_TEMP_ERROR_ETX | IDS_RELATIVE_ERROR)) {
+      if (status == 0)
+       printf("The following nodes has advertised incorrect link advertisements:\n");
+
+      uip_debug_ipaddr_print(network[i].ip);
+      printf(" (%u)\n", network[i].etcob.obj.etx);
+      status = 1;
+    }
+  }
+  for(i = 0; i < node_index; ++i) {
+    if (network[i].status & IDS_TEMP_ERROR) {
+      // Promote the temporary error to a saved error
+      network[i].status |= IDS_RELATIVE_ERROR;
+      network[i].status &= ~IDS_TEMP_ERROR_ETX;
+    }
+    else {
+      // Reset if we didn't see a repeat offence
+      network[i].status &= ~IDS_RELATIVE_ERROR;
+    }
+  }
+  return status;
+      
+
+    }
+
+
+*/
 /**
  * This will find any missing nodes
  *
@@ -555,7 +682,7 @@ missing_ids_info()
   for (i = 0; i < node_index; ++i) {
     if (!valid_node(&network[i])) {
       if (status == 0)
-        printf("The following list of nodes either have outdated or non-existent information: \n");
+       printf("The following list of nodes either have outdated or non-existent information: \n");
       uip_debug_ipaddr_print(network[i].ip);
       printf("\n");
 
@@ -589,6 +716,32 @@ int correct_rank_inconsistencies(void) {
       continue;
 
     for (j = 0; j < network[i].neighbors; ++j) {
+
+        PRINTF("neighbors %d i %d \n",network[i].neighbors,i);
+         PRINTF("network[i].neighbor[j].node->ip");
+         PRINT6ADDR(network[i].neighbor[j].node->ip);
+         PRINTF("\n");
+
+          PRINTF("network[i].ip");
+          PRINT6ADDR(network[i].ip);
+ 	  PRINTF("\n");
+
+	  PRINTF("(uint8_t) network[i].id %d (uint8_t) network[i].neighbor[j].node->id %d network[i].neighbor[j].rank %d network[i].neighbor[j].node->rank %d \n",(uint8_t) network[i].id,(uint8_t) network[i].neighbor[j].node->id,network[i].neighbor[j].rank,network[i].neighbor[j].node->rank);
+         
+         //PRINTF("network[i].neighbor[j] %d network[i].neighbor[j].node->etcob.obj.etx %d\n",network[i].neighbor[j],network[i].neighbor[j].node->etcob.obj.etx);
+          
+ 
+    //    PRINTF("rank network[i].neighbor[j].node-> %d, rank network[i].neighbor[j].rank %d\n",network[i].neighbor[j].node->rank,network[i].neighbor[j].rank);
+     //   PRINTF("network[i].neighbor[j].rank");
+       // PRINT6ADDR(network[i].neighbor[j].ip);
+       
+
+//        PRINTF("and ranks %d \n",network[i].neighbor[j].rank);    
+// PRINTF("avg %d\n",network[i].neighbor[j].rank + network[i].neighbor[j].node->rank);
+       // PRINTF("\n");
+       // PRINTF("0 addrn");
+       // PRINT6ADDR(network[0]);
+       // PRINTF("\n");
       // If we haven't gotten any information from this neighbor, ignore it
       if (!valid_node(network[i].neighbor[j].node) ||
           network[i].neighbor[j].node == &network[0])
@@ -596,13 +749,23 @@ int correct_rank_inconsistencies(void) {
 
       // We have an inconsistency
 
-      int diff;
+      int diff;/*,diff_etx;
+      diff = network[i].neighbor[j].node->rank - network[i].neighbor[j].rank;
+       // PRINTF("DIFF %d",diff);
+       diff_etx= network[i].neighbor[j].node->etcob.obj.etx-network[i].neighbor[j].node->etcob.obj.etx;
+      //PRINTF("\nDIFF %d DIFF_ETX %d i %d j %d",diff,diff_etx,network[i].neighbor[j]);*/
+
       if (network[i].neighbor[j].node->rank > network[i].neighbor[j].rank)
+       {
         diff = network[i].neighbor[j].node->rank - network[i].neighbor[j].rank;
+        
+       }
       else
         diff = network[i].neighbor[j].rank - network[i].neighbor[j].node->rank ;
-
-      // If the absolute difference is > 20% of the ranks averages.
+        
+       PRINTF("network[i].neighbor[j].node->rank %d network[i].neighbor[j].rank %d  diff of the nodes  %d \n",network[i].neighbor[j].node->rank,network[i].neighbor[j].rank, diff);
+    //   PRINTF("(uint8_t) network[i].id %d network[i].neighbor[j].rank %d network[i].neighbor[j].node->rank %d (uint8_t) network[i].neighbor[j].node->id %d \n",(uint8_t) network[i].id, network[i].neighbor[j].rank, network[i].neighbor[j].node->rank,(uint8_t) network[i].neighbor[j].node->id);
+      //  If the absolute difference is > 20% of the ranks averages.
       // (r1+r2)/2*0.2 => (r1+r2)/10
       if (diff > (network[i].neighbor[j].rank + network[i].neighbor[j].node->rank)/10) {
         PRINTF("Node %d is claiming node %d has rank %d, while it claims it has %d\n",
@@ -682,6 +845,7 @@ int detect_correct_rank_inconsistencies(void) {
   return status;
 }
 
+ 
 /**
  * Run the intrusion detection rules
  */
@@ -691,7 +855,18 @@ detect_inconsistencies()
   detect_correct_rank_inconsistencies();
   check_child_parent_relation();
   missing_ids_info();
+  //check_child_parent_etx_relation();
 }
+
+/*void 
+ids_serial_init(void)
+{
+
+  uart1_set_input(serial_line_input_byte);
+
+  serial_line_init();
+
+}*/
 
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(mapper, ev, data)
@@ -700,6 +875,8 @@ PROCESS_THREAD(mapper, ev, data)
   static int init = 1;
 
   PROCESS_BEGIN();
+
+//  ids_serial_init();
 
   PROCESS_PAUSE();
 
@@ -729,13 +906,14 @@ PROCESS_THREAD(mapper, ev, data)
   network[0].ip = &uip_ds6_get_global(ADDR_PREFERRED)->ipaddr;
   network[0].id = compress_ipaddr_t(network[0].ip);
   ++node_index;
+  //dharmini 
+//  printf("nodes_index %d\n",node_index);
 
   while(1) {
     PROCESS_YIELD();
     if(ev == tcpip_event) {
       tcpip_handler();
-    } else if(etimer_expired(&map_timer)) {
-
+    }else if(etimer_expired(&map_timer)) {
       // Map the next DAG.
       if(working_host == 0 && etimer_expired(&host_timer)) {
 #if (DEBUG) & DEBUG_PRINT
@@ -756,8 +934,7 @@ PROCESS_THREAD(mapper, ev, data)
               continue;
             network[0].rank = instance_table[mapper_instance].min_hoprankinc;
 
-            current_rpl_instance_id =
-              instance_table[mapper_instance].instance_id;
+                current_rpl_instance_id = instance_table[mapper_instance].instance_id;
             current_dag = &instance_table[mapper_instance].dag_table[mapper_dag];
 
             // Reset the roots neighbor list and ranks
@@ -799,4 +976,3 @@ PROCESS_THREAD(mapper, ev, data)
 
   PROCESS_END();
 }
-/*---------------------------------------------------------------------------*/
