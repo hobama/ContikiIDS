@@ -147,7 +147,7 @@ int firewall_valid_packet(void)
               PRINTF("type %u \n",message->type);
               if(message->type==COAP_TYPE_ACK ||message->type==COAP_TYPE_NON)
               {
-                PRINTF("type %u \n",message->type);
+                PRINTF("Zebra type %u \n",message->type);
               }
               message->code = message->buffer[1];
               PRINTF("code %u \n",message->code);
