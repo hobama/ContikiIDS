@@ -7,7 +7,7 @@
   <project EXPORT="discard">[CONTIKI_DIR]/tools/cooja/apps/collect-view</project>
   <project EXPORT="discard">[CONTIKI_DIR]/tools/cooja/apps/powertracker</project>
   <simulation>
-    <title>Contiki</title>
+    <title>My simulation</title>
     <randomseed>123456</randomseed>
     <motedelay_us>1000000</motedelay_us>
     <radiomedium>
@@ -70,8 +70,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>30.923413213817227</x>
-        <y>127.51063702706415</y>
+        <x>70.2636996290343</x>
+        <y>50.95790937334053</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -84,8 +84,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>24.744353996093718</x>
-        <y>231.3617944166543</y>
+        <x>64.45997665700317</x>
+        <y>36.141070086743916</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -98,8 +98,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>36.82526545805804</x>
-        <y>211.28616213427242</y>
+        <x>58.27718168905106</x>
+        <y>47.78773037521183</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -112,8 +112,8 @@
       <breakpoints />
       <interface_config>
         se.sics.cooja.interfaces.Position
-        <x>34.16035851791885</x>
-        <y>172.9115021962681</y>
+        <x>55.54524902879316</x>
+        <y>56.27110021496006</y>
         <z>0.0</z>
       </interface_config>
       <interface_config>
@@ -122,31 +122,21 @@
       </interface_config>
       <motetype_identifier>sky2</motetype_identifier>
     </mote>
+    <mote>
+      <breakpoints />
+      <interface_config>
+        se.sics.cooja.interfaces.Position
+        <x>75.10720436469724</x>
+        <y>70.28751162691339</y>
+        <z>0.0</z>
+      </interface_config>
+      <interface_config>
+        se.sics.cooja.mspmote.interfaces.MspMoteID
+        <id>5</id>
+      </interface_config>
+      <motetype_identifier>sky2</motetype_identifier>
+    </mote>
   </simulation>
-  <plugin>
-    se.sics.cooja.plugins.Visualizer
-    <plugin_config>
-      <skin>se.sics.cooja.plugins.skins.IDVisualizerSkin</skin>
-      <viewport>5.628714374249987 0.0 0.0 5.628714374249987 68.72109898065719 -964.2694578852925</viewport>
-    </plugin_config>
-    <width>400</width>
-    <z>2</z>
-    <height>400</height>
-    <location_x>1</location_x>
-    <location_y>1</location_y>
-  </plugin>
-  <plugin>
-    se.sics.cooja.plugins.Notes
-    <plugin_config>
-      <notes>Enter notes here</notes>
-      <decorations>true</decorations>
-    </plugin_config>
-    <width>670</width>
-    <z>3</z>
-    <height>160</height>
-    <location_x>680</location_x>
-    <location_y>0</location_y>
-  </plugin>
   <plugin>
     se.sics.cooja.plugins.SimControl
     <width>280</width>
@@ -156,15 +146,59 @@
     <location_y>0</location_y>
   </plugin>
   <plugin>
+    se.sics.cooja.plugins.Visualizer
+    <plugin_config>
+      <skin>se.sics.cooja.plugins.skins.IDVisualizerSkin</skin>
+      <viewport>10.325558266921865 0.0 0.0 10.325558266921865 -488.5238149332897 -381.7577967406422</viewport>
+    </plugin_config>
+    <width>400</width>
+    <z>0</z>
+    <height>400</height>
+    <location_x>1</location_x>
+    <location_y>1</location_y>
+  </plugin>
+  <plugin>
     se.sics.cooja.plugins.LogListener
     <plugin_config>
-      <filter />
+      <filter>ZEBRA</filter>
     </plugin_config>
-    <width>950</width>
-    <z>0</z>
-    <height>397</height>
+    <width>966</width>
+    <z>2</z>
+    <height>240</height>
     <location_x>400</location_x>
     <location_y>160</location_y>
+  </plugin>
+  <plugin>
+    se.sics.cooja.plugins.TimeLine
+    <plugin_config>
+      <mote>0</mote>
+      <mote>1</mote>
+      <mote>2</mote>
+      <mote>3</mote>
+      <mote>4</mote>
+      <showRadioRXTX />
+      <showRadioHW />
+      <showLEDs />
+      <split>-1</split>
+      <zoomfactor>500.0</zoomfactor>
+    </plugin_config>
+    <width>1366</width>
+    <z>4</z>
+    <height>166</height>
+    <location_x>0</location_x>
+    <location_y>407</location_y>
+  </plugin>
+  <plugin>
+    se.sics.cooja.plugins.Notes
+    <plugin_config>
+      <notes>Enter notes here</notes>
+      <decorations>true</decorations>
+    </plugin_config>
+    <width>686</width>
+    <z>3</z>
+    <height>160</height>
+    <location_x>680</location_x>
+    <location_y>0</location_y>
   </plugin>
 </simconf>
 
