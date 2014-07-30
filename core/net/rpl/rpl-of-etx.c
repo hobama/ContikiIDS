@@ -90,11 +90,11 @@ calculate_path_metric(rpl_parent_t *p)
    return  p->mc.obj.etx = 0;
   }
 
- if(node_id == 2)
+ /*if(node_id == 2)
   {
    
    return  p->mc.obj.etx = 0;
-  }
+  }*/
 
   if(node_id == 8)
   {
@@ -141,11 +141,11 @@ calculate_rank(rpl_parent_t *p, rpl_rank_t base_rank)
     }
 
     rank_increase = NEIGHBOR_INFO_FIX2ETX(INITIAL_LINK_METRIC) * RPL_MIN_HOPRANKINC;
-    PRINTF("Rank increase %u,INITIAL_LINK_METRIC %u,NEIGHBOR_INFO_FIX2ETX(INITIAL_LINK_METRIC) %u,RPL_MIN_HOPRANKINC %u \n",rank_increase,INITIAL_LINK_METRIC,NEIGHBOR_INFO_FIX2ETX(INITIAL_LINK_METRIC),RPL_MIN_HOPRANKINC);
+   // PRINTF("Rank increase %u,INITIAL_LINK_METRIC %u,NEIGHBOR_INFO_FIX2ETX(INITIAL_LINK_METRIC) %u,RPL_MIN_HOPRANKINC %u \n",rank_increase,INITIAL_LINK_METRIC,NEIGHBOR_INFO_FIX2ETX(INITIAL_LINK_METRIC),RPL_MIN_HOPRANKINC);
   } else {
     /* multiply first, then scale down to avoid truncation effects */
     rank_increase = NEIGHBOR_INFO_FIX2ETX(p->link_metric * p->dag->instance->min_hoprankinc);
-     PRINTF("Rank increase %u,p->link_metric %u,p->dag->instance->min_hoprankinc %u,NEIGHBOR_INFO_FIX2ETX(p->link_metric * p->dag->instance->min_hoprankinc) %u \n",rank_increase,p->link_metric,p->dag->instance->min_hoprankinc,NEIGHBOR_INFO_FIX2ETX(p->link_metric * p->dag->instance->min_hoprankinc));
+    // PRINTF("Rank increase %u,p->link_metric %u,p->dag->instance->min_hoprankinc %u,NEIGHBOR_INFO_FIX2ETX(p->link_metric * p->dag->instance->min_hoprankinc) %u \n",rank_increase,p->link_metric,p->dag->instance->min_hoprankinc,NEIGHBOR_INFO_FIX2ETX(p->link_metric * p->dag->instance->min_hoprankinc));
 
     if(base_rank == 0) {
       PRINTF("p->rank %u\n",p->rank);
@@ -155,7 +155,7 @@ calculate_rank(rpl_parent_t *p, rpl_rank_t base_rank)
     }
   }
 
-  PRINTF("INFINITE_RANK %u,base_rank %u,INFINITE_RANK - base_rank %u rank_increase %u\n",INFINITE_RANK,base_rank,INFINITE_RANK - base_rank,rank_increase);
+  //PRINTF("INFINITE_RANK %u,base_rank %u,INFINITE_RANK - base_rank %u rank_increase %u\n",INFINITE_RANK,base_rank,INFINITE_RANK - base_rank,rank_increase);
   
    if(INFINITE_RANK - base_rank < rank_increase) {
     
@@ -209,7 +209,7 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
   if(p1 == dag->preferred_parent || p2 == dag->preferred_parent) {
     if(p1_metric < p2_metric + min_diff &&
        p1_metric > p2_metric - min_diff) {
-      PRINTF("RPL: MRHOF hysteresis: %u <= %u <= %u\n",
+       PRINTF("RPL: MRHOF hysteresis: %u <= %u <= %u\n",
              p2_metric - min_diff,
              p1_metric,
              p2_metric + min_diff);
@@ -220,7 +220,7 @@ best_parent(rpl_parent_t *p1, rpl_parent_t *p2)
     }
   }
   
-  PRINTF("p1_metric %u, p2_metric %u,comparision %u \n",p1_metric,p2_metric,p1_metric < p2_metric ? p1 : p2);
+  //PRINTF("p1_metric %u, p2_metric %u,comparision %u \n",p1_metric,p2_metric,p1_metric < p2_metric ? p1 : p2);
   return p1_metric < p2_metric ? p1 : p2;
 }
 

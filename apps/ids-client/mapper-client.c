@@ -9,7 +9,7 @@
 
 #include <string.h>
 
-#define DEBUG DEBUG_PRINT
+#define DEBUG DEBUG_NONE
 #include "net/uip-debug.h"
 
 static struct uip_udp_conn *mapper_conn;
