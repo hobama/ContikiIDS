@@ -9,6 +9,8 @@
 #include "contiki-net.h"
 #include "../apps/ids-common/ids-common.h"
 #include "../apps/er-coap-07/er-coap-07.h" 
+#include "../apps/ids-common/ids-common.h" 
+
 
 /*struct individual_ip_record_table_state
 {
@@ -36,13 +38,17 @@ struct recorded_state_table
 
 //static int    already_visited_address;
 //static int packet_count=0;
-static struct  recorded_state_table stored_connections[incoming_allowed_connections];
+//static struct  recorded_state_table stored_connections[incoming_allowed_connections];
 static struct  individual_ip_record_table_state invidual_entry [incoming_allowed_connections];
 static struct etimer displaytimer;
 static coap_packet_t message[1];
+static struct uip_udp_conn *firewallconn;
 coap_status_t coap_error_code = NO_ERROR;
+uint8_t *appdata;
 //static int counter_used;
 int i=0;
+
+uint8_t ackpacket;
 
 uint16_t compress_ipaddr_t(uip_ipaddr_t * ipaddr) {
   return ipaddr->u16[7];
@@ -86,7 +92,8 @@ int udp_source_port_mismatch()
 
 int firewall_valid_packet(void) 
 {
-
+   if(i>incoming_allowed_connections)
+   i=0;
 	
      
        if( UIP_IP_BUF->ttl == 0)
@@ -127,56 +134,67 @@ int firewall_valid_packet(void)
      	   
              case UIP_PROTO_UDP: 
               printf("proto:UDP %d \n",UIP_IP_BUF->proto);
-              printf("\n src:");
-             // uip_debug_ipaddr_print(&UIP_IP_BUF->srcipaddr);
-              PRINT6ADDR(&UIP_IP_BUF->srcipaddr); // printf("\t");
-              printf("destination : ");
-              PRINT6ADDR(&UIP_IP_BUF->destipaddr);     
-          /*    printf("source port no %d\n ",uip_htons(UIP_UDP_BUF->srcport));  
-              printf("destination port %d \n",uip_htons(UIP_UDP_BUF->destport));*/
-		
-                
-	      switch(uip_htons(UIP_UDP_BUF->destport))//stored_connections->individualconnections[i]->destination_port)
-	      {
-	     	
-	      case 5683:  
-              PRINTF("COAP \n");
-            //  coap_error_code = coap_parse_message(message, uip_appdata, uip_datalen());
-              message->buffer=uip_appdata;
-              message->type = (COAP_HEADER_TYPE_MASK & message->buffer[0])>>COAP_HEADER_TYPE_POSITION;
-              PRINTF("type %u \n",message->type);
+             
+              if(uip_htons(UIP_UDP_BUF->destport) == 5683)
+              {
+                 PRINTF("COAP \n");
+                 message->buffer=uip_appdata;
+                 message->type = (COAP_HEADER_TYPE_MASK & message->buffer[0])>>COAP_HEADER_TYPE_POSITION;
+	         PRINTF("type %u \n",message->type);
               if(message->type==COAP_TYPE_ACK ||message->type==COAP_TYPE_NON)
               {
                 PRINTF("Zebra type %u \n",message->type);
+               
+                invidual_entry[i].destination_address=&UIP_IP_BUF->destipaddr;
+                invidual_entry[i].remote_address=&UIP_IP_BUF->srcipaddr;
+                invidual_entry[i].number_of_connections+=1;
+                invidual_entry[i].visited_address=1;
+                invidual_entry[i].remoteport=uip_htons(UIP_UDP_BUF->srcport);
+                invidual_entry[i].destinationport=uip_htons(UIP_UDP_BUF->destport);
+                invidual_entry[i].connectiontype=message->type;  
+                invidual_entry[i].succesful_connection+=1;
+                    
               }
-              message->code = message->buffer[1];
-              PRINTF("code %u \n",message->code);
-           //	send_ping(&UIP_IP_BUF->destipaddr);
-              stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
-              stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;
-              stored_connections->individualconnections[i]->number_of_connections+=1;
-              stored_connections->individualconnections[i]->visited_address=1;
-              stored_connections->individualconnections[i]->remoteport=uip_htons(UIP_UDP_BUF->srcport);
-              stored_connections->individualconnections[i]->destinationport=uip_htons(UIP_UDP_BUF->destport);
-              stored_connections->individualconnections[i]->connectiontype=message->type;
-              stored_connections->individualconnections[i]->protocol=UIP_IP_BUF->proto;
-
-	      break;	
-
-	      case 4443:
+             else
+              {
+                invidual_entry[i].destination_address=&UIP_IP_BUF->destipaddr;
+                invidual_entry[i].remote_address=&UIP_IP_BUF->srcipaddr;
+                invidual_entry[i].number_of_connections+=1;
+                invidual_entry[i].visited_address=1;
+                invidual_entry[i].remoteport=uip_htons(UIP_UDP_BUF->srcport);
+                invidual_entry[i].destinationport=uip_htons(UIP_UDP_BUF->destport);
+                invidual_entry[i].connectiontype=message->type; 
+                invidual_entry[i].unsuccesful_connections+=1;
+ 
+               }
               
-              stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
-              stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;
-              stored_connections->individualconnections[i]->number_of_connections+=1;
-              stored_connections->individualconnections[i]->visited_address=1;
 
-	      break;	
+             }
 
-          
+             else if(uip_htons(UIP_UDP_BUF->destport) == 4443)
+              {
+                invidual_entry[i].destination_address=&UIP_IP_BUF->destipaddr;
+                invidual_entry[i].remote_address=&UIP_IP_BUF->srcipaddr;
+                invidual_entry[i].number_of_connections+=1;
+                invidual_entry[i].visited_address=1;
+                invidual_entry[i].remoteport=uip_htons(UIP_UDP_BUF->srcport);
+                invidual_entry[i].destinationport=uip_htons(UIP_UDP_BUF->destport);
+                invidual_entry[i].connectiontype=message->type; 
 
-              }
 
-             
+               }
+             else
+             {
+         
+                static char fiackdata[sizeof(ackpacket)];
+                unsigned char * fiackdataw = fiackdata;
+                ackpacket = 1;
+                MAPPER_ADD_PACKETDATA(fiackdataw, ackpacket);
+                uip_udp_packet_sendto(firewallconn, fiackdata, sizeof(fiackdata), &UIP_IP_BUF->srcipaddr, UIP_HTONS(MAPPER_SERVER_PORT));
+                appdata = (uint8_t *) uip_appdata;
+                 
+            
+            }
         case UIP_PROTO_ICMP6:
        /* stored_connections->individualconnections[i]->remote_address=&UIP_IP_BUF->srcipaddr;
         stored_connections->individualconnections[i]->destination_address=&UIP_IP_BUF->destipaddr;*/
@@ -190,37 +208,29 @@ int firewall_valid_packet(void)
         printf("destination ");
         PRINT6ADDR(&UIP_IP_BUF->destipaddr);
         printf("\n");
+        if(UIP_ICMP_BUF->type == ICMP6_ECHO_REQUEST)
+       {
+          invidual_entry[i].destination_address=&UIP_IP_BUF->destipaddr;
+          invidual_entry[i].remote_address=&UIP_IP_BUF->srcipaddr;
+          invidual_entry[i].number_of_connections+=1;
+
+       } 
+       
+       else if(UIP_ICMP_BUF->type == ICMP6_ECHO_REPLY)
+
+       {
+          invidual_entry[i].destination_address=&UIP_IP_BUF->destipaddr;
+          invidual_entry[i].remote_address=&UIP_IP_BUF->srcipaddr;
+          invidual_entry[i].number_of_connections+=1;  
+       
+        }
+
+
+
+         
        // PRINTF("type %d \n ",UIP_ICMP_BUF->type);
 
-	switch(UIP_ICMP_BUF->type)
-
-	{
-	
-	case ICMP6_ECHO_REQUEST :
-        
-
-	case ICMP6_ECHO_REPLY   :
-	
-
-	case ICMP6_RS           :
-                             
-	case ICMP6_RA           :               
- 	
-	case ICMP6_NS           :
-                       
-	case ICMP6_NA           :
-                 
-	case ICMP6_REDIRECT     :
-               
-	case ICMP6_RPL          :
-	
-	break; 
-        
-        
-               
-	}
-
-      break;
+	 break;
   
     
 // }
@@ -230,12 +240,13 @@ int firewall_valid_packet(void)
  if(address_mismatch() && udp_source_port_mismatch() )
    {
 
- stored_connections->individualconnections[i]->number_of_bad_reported_connections+=1;
+ invidual_entry[i].succesful_connection+=1;
 
     }
    else
   {
-            stored_connections->individualconnections[i]->number_of_succesful_connections+=1;
+            invidual_entry[i].unsuccesful_connections+=1;
+
  }
   i++;
   return 1;
@@ -243,6 +254,6 @@ int firewall_valid_packet(void)
 
 void firewall_init(void) {
   PRINTF("Initializing firewall!\n");
-  memset(stored_connections, 0, sizeof(stored_connections));
+ // memset(stored_connections, 0, sizeof(stored_connections));
   memset(invidual_entry, 0, sizeof(invidual_entry));
   }

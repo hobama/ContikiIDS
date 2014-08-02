@@ -54,14 +54,30 @@ struct individual_ip_record_table_state
         uint16_t remoteport;
         uint16_t destinationport;
        	int number_of_connections;
-	int number_of_succesful_connections;
-	int number_of_bad_reported_connections;
+	int succesful_connection;
+	int unsuccesful_connections;
 	int visited_address;
         int connectiontype;
         uint8_t protocol;
  
 };
-struct recorded_state_table
+
+#define MAPPER_CLIENT_PORT 4715
+
+#define FIREWALL_ADD_PACKETDATA(dest, source) \
+  memcpy(dest, &source, sizeof(source)); dest += sizeof(source)
+/**
+ * Copy the contents from source (needs to be a pointer) to dest, which
+ * needs to be normal data type. Increase source with the size of dest.
+ *
+ * Usefull for reading data from a buffer, the inverse of MAPPER_ADD_PACKETDATA
+ */
+#define FIREWALL_GET_PACKETDATA(dest, source) \
+  memcpy(&dest, source, sizeof(dest)); source += sizeof(dest)
+
+
+
+/*struct recorded_state_table
 {
 	//uint16_t connection_statemode;
         struct individual_ip_record_table_state *individualconnections[incoming_allowed_connections];
@@ -71,7 +87,7 @@ struct recorded_state_table
 //	uint8_t connection_id;//number of conections for that particular address
        // LIST_STRUCT(good_connection_sourceaddress);
         // LIST_STRUCT(Unauthorized_connection);
-};
+};*/
 
 //static int small_index;
 //static int global_index;
