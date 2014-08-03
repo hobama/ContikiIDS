@@ -43,6 +43,7 @@
 #include <ctype.h>
 
 #define DEBUG DEBUG_PRINT
+//#define DEBUG DEBUG_NONE
 #include "net/uip-debug.h"
 
 #include "dev/serial-line.h"
@@ -251,10 +252,10 @@ add_node(uint16_t id)
 
   if(node != NULL)
     return node;
-   printf("node _ index : %d", node_index);
+  // printf("node _ index : %d", node_index);
 
   if(node_index >= NETWORK_NODES) {     // Out of memory
-    PRINTF("Out of memory\n");
+    //ze PRINTF("Out of memory\n");
   return NULL;
   }
 
@@ -270,13 +271,13 @@ add_node(uint16_t id)
       network[node_index].ip = &uip_ds6_routing_table[i].ipaddr;
       network[node_index].id = compress_ipaddr_t(network[node_index].ip);
 
-      PRINTF("Creating new node with IP: ");
+     // ze PRINTF("Creating new node with IP: ");
       PRINT6ADDR(network[node_index].ip);
-      PRINTF(" (%x)\n", id);
+    // ze  PRINTF(" (%x)\n", id);
       return &network[node_index++];
     }
   }
-  PRINTF("No entry in the routing table matching ID %x!\n", id);
+ // ze PRINTF("No entry in the routing table matching ID %x!\n", id);
   return NULL;
 }
 
@@ -305,7 +306,7 @@ print_subtree(struct Node *node, int depth)
 
   // PRINT6ADDR(&node->ip);
   
- PRINTF("nodeetx \n %u",node->etcob.obj.etx);
+ //zePRINTF("nodeetx \n %u",node->etcob.obj.etx);
   //dharmini
  // printf(" (t: %d, p: %x, r: %d ) ", node->timestamp, node->parent_id, node->rank);
   printf(" (t: %d, p: %x, r: %d,e: %d) ", node->timestamp, node->parent->parent_id, node->rank, node->etcob.obj.etx);
@@ -376,9 +377,9 @@ tcpip_handler()
   if(id == NULL)
     return;
 
-  PRINTF("Found node ");
+ /* ze PRINTF("Found node ");
   PRINT6ADDR(id->ip);
-  PRINTF("\n");
+  PRINTF("\n");*/
 
   // RPL Instance ID | DODAG ID | DAG Version | Timestamp | 
 
@@ -395,9 +396,8 @@ tcpip_handler()
 
   MAPPER_GET_PACKETDATA(version_recieved, appdata);
   if (version_recieved != current_dag->version) {
-    PRINTF("Non-matching DODAG Version Number for incoming mapping information\n");
-    PRINTF("got %d while expecting %d\n", version_recieved, current_dag->version);
-    return;
+   /* ze PRINTF("Non-matching DODAG Version Number for incoming mapping information\n");
+    PRINTF("got %d while expecting %d\n", version_recieved, current_dag->version*/
   }
   MAPPER_GET_PACKETDATA(timestamp_recieved, appdata);
   if (timestamp_recieved != timestamp) {
@@ -413,7 +413,7 @@ tcpip_handler()
 // 
 //papaya
   MAPPER_GET_PACKETDATA(id->etcob.obj.etx, appdata);
-  PRINTF("received etx value %d",id->etcob.obj.etx);
+//ze  PRINTF("received etx value %d",id->etcob.obj.etx);
 
   // Parent
   MAPPER_GET_PACKETDATA(parent_id, appdata);
@@ -452,8 +452,8 @@ tcpip_handler()
   
   id->neighbors = neighbors;
 //kiwi
-  hops = uip_ds6_if.cur_hop_limit - UIP_IP_BUF->ttl + 1;
-  PRINTF("hops of the node %d \n",hops);
+  //hops = uip_ds6_if.cur_hop_limit - UIP_IP_BUF->ttl + 1;
+  //zePRINTF("hops of the node %d \n",hops);
 }
 
 /**
@@ -599,7 +599,7 @@ check_child_parent_relation()
     }
   }
   return status;
-}elseloopparentetx
+}
 
 
 int check_child_parent_etx_relation(void)
@@ -747,7 +747,7 @@ int correct_rank_inconsistencies(void) {
 
     for (j = 0; j < network[i].neighbors; ++j) {
 
-         PRINTF("neighbors %d i %d  j %d \n",network[i].neighbors,i,j);
+    /*     PRINTF("neighbors %d i %d  j %d \n",network[i].neighbors,i,j);
          
          PRINTF("network[i].neighbor[j].node->ip");
          PRINT6ADDR(network[i].neighbor[j].node->ip);
@@ -763,7 +763,7 @@ int correct_rank_inconsistencies(void) {
          PRINTF("network[i].neighbor[j].rank %d network[i].neighbor[j].node->rank %d \n",network[i].neighbor[j].rank,network[i].neighbor[j].node->rank);
          
           PRINTF("network[i].neighbor[j].etcob.obj.etx %d network[i].neighbor[j].node->etcob.obj.etx %d i %d j %d\n",network[i].neighbor[j].etcob.obj.etx,network[i].neighbor[j].node->etcob.obj.etx,i,j);
-          
+      */    
 //snake	
      //if(network[i].neighbor[network[i].parent_id]
 
@@ -841,7 +841,7 @@ int correct_rank_inconsistencies(void) {
           network[i].neighbor[j].rank = network[i].neighbor[j].node->rank;
       }
 
-      PRINTF("New rank: %d\n", network[i].rank);
+    //ze  PRINTF("New rank: %d\n", network[i].rank);
     }
   }
   return inconsistencies;

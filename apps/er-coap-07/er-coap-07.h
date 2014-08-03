@@ -41,7 +41,7 @@
 
 #include <stddef.h> /* for size_t */
 #include "contiki-net.h"
-#include "erbium.h"
+//#include "erbium.h"
 
 #define COAP_DEFAULT_PORT                    5683
 
