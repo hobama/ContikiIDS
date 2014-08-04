@@ -2,3 +2,4 @@ ids-server_src = mapper.c
 
 APPS += ids-common
 include $(CONTIKI)/apps/ids-common/Makefile.ids-common
+

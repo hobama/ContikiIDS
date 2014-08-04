@@ -50,9 +50,9 @@ int i=0;
 
 uint8_t ackpacket;
 
-uint16_t compress_ipaddr_t(uip_ipaddr_t * ipaddr) {
+/*uint16_t compress_ipaddr_t(uip_ipaddr_t * ipaddr) {
   return ipaddr->u16[7];
- } 
+ } */
 
 
 int address_mismatch()
