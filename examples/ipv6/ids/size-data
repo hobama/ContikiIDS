@@ -1,0 +1,114 @@
+
+
+# core
+autostart 0 0
+energest 0 0
+etimer 0 0
+irq 0 0
+leds 0 0
+list 0 0
+memb 0 0
+mt 0 0
+print-stats 0 0
+process 0 0
+procinit 0 0
+profile 0 0
+profile-aggregates 0 0
+random 0 0
+rtimer 0 0
+sensors 0 0
+serial 0 0
+timer 0 0
+timetable 0 0
+timetable-aggregate 0 0
+
+
+# elfloader
+elfloader 0 0
+elfloader-msp430 0 0
+
+
+# other
+
+
+# rime
+abc 0 0
+collect 0 0
+ctimer 0 0
+ibc 0 0
+ipolite 0 0
+mesh 0 0
+meshconn 0 0
+mh 0 0
+neighbor 0 0
+neighbor-discovery 0 0
+nf 0 0
+nullmac 0 0
+packetbuf 0 0
+polite 0 0
+queuebuf 0 0
+rime 0 0
+rimeaddr 0 0
+rimestats 0 0
+rmesh 0 0
+rmh 0 0
+route 0 0
+route-discovery 0 0
+ruc 0 0
+rucb 0 0
+rudolph0 0 0
+rudolph1 0 0
+rudolph2 0 0
+sabc 0 0
+sibc 0 0
+suc 0 0
+timesynch 0 0
+trickle 0 0
+uc 0 0
+xmac 0 0
+
+
+# sky
+battery-sensor 0 0
+button-sensor 0 0
+cfs-xmem 0 0
+clock 0 0
+contiki-sky-main 0 0
+ds2411 0 0
+flash 0 0
+i2c 0 0
+leds-arch 0 0
+light 0 0
+msp430 0 0
+mtarch 0 0
+radio-sensor 0 0
+rtimer-arch 0 0
+sht11 0 0
+simple-cc2420 0 0
+simple-cc2420-arch 0 0
+slip 0 0
+spi 0 0
+uart1 0 0
+watchdog 0 0
+xmem 0 0
+
+
+# uip
+hc 0 0
+psock 0 0
+resolv 0 0
+slip 0 0
+tcpdump 0 0
+tcpip 0 0
+uaodv 0 0
+uaodv-rt 0 0
+uip 0 0
+uip-fw 0 0
+uip-fw-drv 0 0
+uip-ipchksum 0 0
+uip-neighbor 0 0
+uip-over-mesh 0 0
+uip-split 0 0
+uip-udp-packet 0 0
+uip_arp 0 0
+uiplib 0 0
