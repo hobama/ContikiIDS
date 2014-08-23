@@ -87,7 +87,7 @@ calculate_path_metric(rpl_parent_t *p)
   if(node_id == 5)
   {
    
-   return  p->mc.obj.etx = 0;
+   return  p->mc.obj.etx = 128;
   }
 
  /*if(node_id == 2)

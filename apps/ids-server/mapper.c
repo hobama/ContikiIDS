@@ -605,9 +605,9 @@ check_child_parent_relation()
 int check_child_parent_etx_relation(void)
 {
 int status = 0;
-  int i;
+  int i,j;
 
-  for(i = 0; i < node_index; ++i) {
+  for(i = 1; i < node_index; ++i) {
     if (!valid_node(&network[i]))
       continue;
    
@@ -640,26 +640,73 @@ int status = 0;
             //PRINTF("ZEBRA network[i].ip");
            // uip_debug_ipaddr_print(network[i].ip);
            //  PRINTF("\n");
-           // PRINTF("ifloopetx  %d \n",network[i].etcob.obj.etx);
-           // PRINTF("ifloopparentetx network[i].neighbor[network[i].parent_id].etcob.obj.etx %u \n",network[i].neighbor[network[i].parent_id].etcob.obj.etx);
             network[i].status |= IDS_TEMP_ERROR_ETX;
             network[i].neighbor[network[i].parent_id].node->status |= IDS_TEMP_ERROR_ETX;
            //break;
            }
          } 
-          else
-          {
-         // PRINTF("elseloopetx  %d \n",network[i].etcob.obj.etx);
-         // PRINTF("elseloopparentetx network[i].neighbor[network[i].parent_id].etcob.obj.etx %u \n",network[i].neighbor[network[i].parent_id].etcob.obj.etx);
-          //uip_debug_ipaddr_print(network[i].ip);
-          PRINTF("\n");
-         // PRINTF("elselooprank  %d \n",network[i].rank);
           
-           }
         }
+    /*  else
+      continue;*/
 
-      else
-      continue;      
+
+      else if(network[i].etcob.obj.etx > 0)
+
+      	{
+          
+             for (j = 0; j < network[i].neighbors; ++j) 
+             {   	
+                    /*  if((uint8_t) network[i].id == 1)
+                      continue;*/
+                        
+		                 
+                      PRINTF("inner neighbors \n ");
+                      PRINTF("neighbors of i %d neighbors of j %d  i %d  j %d \n",network[i].neighbors,network[j].neighbors,i,j);
+
+                      PRINTF("network[i].ip");
+         	      PRINT6ADDR(network[i].ip);
+ 		      PRINTF("\n");
+                      
+                      PRINTF("network[i].etcob.obj.etx %u \n",network[i].etcob.obj.etx);
+
+                      PRINTF("network[j].ip");
+         	      PRINT6ADDR(network[j].ip);
+ 		      PRINTF("\n");
+                       
+                      PRINTF("network[j].etcob.obj.etx %u \n",network[j].etcob.obj.etx);
+                      
+                                          
+                      PRINTF("network[i].neighbor[network[i].parent_id].node->ip");
+                      PRINT6ADDR(network[i].neighbor[network[i].parent_id].node->ip);
+                      PRINTF("\n");
+		      
+                      
+       
+                      PRINTF("Parent of j network[j].neighbor[network[j].parent_id].node->ip");
+                      PRINT6ADDR(network[j].neighbor[network[j].parent_id].node->ip);
+                      PRINTF("\n");
+
+                      PRINTF("network[i].etcob.obj.etx %u \n",network[i].etcob.obj.etx);
+                      PRINTF("network[i].neighbor[network[i].parent_id].node->etcob.obj.etx %u \n",network[i].neighbor[network[i].parent_id].node->etcob.obj.etx);
+
+                     if(network[i].etcob.obj.etx < network[i].neighbor[network[i].parent_id].node->etcob.obj.etx)
+                      {
+                         PRINTF("LAP");
+                    network[i].status |= IDS_TEMP_ERROR_ETX;
+          			network[i].neighbor[network[i].parent_id].node->status |= IDS_TEMP_ERROR_ETX;
+                       }
+
+
+
+ 
+                          
+                }
+
+
+      }
+
+
     }
 
 
@@ -744,10 +791,11 @@ int correct_rank_inconsistencies(void) {
     // If we haven't gotten any information for this node, ignore it
     if (!valid_node(&network[i]))
       continue;
-
+//katara
     for (j = 0; j < network[i].neighbors; ++j) {
-
-    /*     PRINTF("neighbors %d i %d  j %d \n",network[i].neighbors,i,j);
+         
+      /*   
+         PRINTF("neighbors %d i %d  j %d \n",network[i].neighbors,i,j);
          
          PRINTF("network[i].neighbor[j].node->ip");
          PRINT6ADDR(network[i].neighbor[j].node->ip);
@@ -755,19 +803,16 @@ int correct_rank_inconsistencies(void) {
 
           PRINTF("network[i].ip");
           PRINT6ADDR(network[i].ip);
- 	  PRINTF("\n");
+ 	  PRINTF("\n");*/
 
-	 PRINTF("(uint8_t) network[i].id %d (uint8_t) network[i].neighbor[j].node->id %d ", (uint8_t) network[i].id, (uint8_t) network[i].neighbor[j].node->id);
+	/* PRINTF("(uint8_t) network[i].id %d (uint8_t) network[i].neighbor[j].node->id %d " , (uint8_t) network[i].id, (uint8_t) network[i].neighbor[j].node->id);
 
 
          PRINTF("network[i].neighbor[j].rank %d network[i].neighbor[j].node->rank %d \n",network[i].neighbor[j].rank,network[i].neighbor[j].node->rank);
          
-          PRINTF("network[i].neighbor[j].etcob.obj.etx %d network[i].neighbor[j].node->etcob.obj.etx %d i %d j %d\n",network[i].neighbor[j].etcob.obj.etx,network[i].neighbor[j].node->etcob.obj.etx,i,j);
-      */    
-//snake	
-     //if(network[i].neighbor[network[i].parent_id]
+          PRINTF("network[i].neighbor[j].etcob.obj.etx %d network[i].neighbor[j].node->etcob.obj.etx %d i %d j %d\n",network[i].neighbor[j].etcob.obj.etx,network[i].neighbor[j].node->etcob.obj.etx,i,j);*/
+         
 
-           // PRINTF("elseloopparentetx network[i].neighbor[network[i].parent_id].etcob.obj.etx %u \n",network[i].neighbor[network[i].parent_id].etcob.obj.etx);
      
        // PRINT6ADDR(network[0]);
        // PRINTF("\n");
@@ -779,11 +824,12 @@ int correct_rank_inconsistencies(void) {
 
       // We have an inconsistency
 
-      int diff,diff_etx;     
+      int diff;//,diff_etx1,diff_etx2;     
        
-      // diff_etx= network[i].neighbor[j].node->etcob.obj.etx-network[i].neighbor[j].node->etcob.obj.etx;
-     
-
+     // diff_etx1= network[i].neighbor[j].node->etcob.obj.etx-network[i].neighbor[j].etcob.obj.etx;
+      // diff_etx2=network[i].neighbor[j].etcob.obj.etx- network[i].etcob.obj.etx;
+         
+     // PRINTF("diff_etx1 %u diff_etx2 %u network[i].etcob.obj.etx %u \n ", diff_etx1,diff_etx2,network[i].etcob.obj.etx);
       if (network[i].neighbor[j].node->rank > network[i].neighbor[j].rank)
        {
         diff = network[i].neighbor[j].node->rank - network[i].neighbor[j].rank;
@@ -797,18 +843,20 @@ int correct_rank_inconsistencies(void) {
       //  If the absolute difference is > 20% of the ranks averages.
       // (r1+r2)/2*0.2 => (r1+r2)/10
       if (diff > (network[i].neighbor[j].rank + network[i].neighbor[j].node->rank)/10) {
-        PRINTF("Node %d is claiming node %d has rank %d, while it claims it has %d\n",
-            (uint8_t) network[i].id, (uint8_t) network[i].neighbor[j].node->id,
-            network[i].neighbor[j].rank, network[i].neighbor[j].node->rank);
+     //   PRINTF("Node %d is claiming node %d has rank %d, while it claims it has %d\n",
+       //     (uint8_t) network[i].id, (uint8_t) network[i].neighbor[j].node->id,
+       //     network[i].neighbor[j].rank, network[i].neighbor[j].node->rank);
 
         network[i].visited++;
         network[i].neighbor[j].node->visited++;
+       
+         
       }
     }
   }
 
   for (i = 0; i < node_index; ++i) {
-    if (network[i].visited > INCONSISTENCY_THREASHOLD) {
+    if (network [i].visited > INCONSISTENCY_THREASHOLD) {
       PRINTF("Rank inconsistency: ");
       PRINT6ADDR(network[i].ip);
       PRINTF("\n");
