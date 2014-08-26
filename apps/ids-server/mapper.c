@@ -42,8 +42,8 @@
 #include <string.h>
 #include <ctype.h>
 
-#define DEBUG DEBUG_PRINT
-//#define DEBUG DEBUG_NONE
+//#define DEBUG DEBUG_PRINT
+#define DEBUG DEBUG_NONE
 #include "net/uip-debug.h"
 
 #include "dev/serial-line.h"
@@ -58,7 +58,7 @@
 #define IDS_RANK_ERROR 0x02
 #define IDS_RELATIVE_ERROR 0x04
 #define IDS_TEMP_ERROR_ETX 0x05
-
+//#include "powertrace.h"
 /**
  * Connection for incoming IDS information packets
  */
@@ -271,13 +271,13 @@ add_node(uint16_t id)
       network[node_index].ip = &uip_ds6_routing_table[i].ipaddr;
       network[node_index].id = compress_ipaddr_t(network[node_index].ip);
 
-     // ze PRINTF("Creating new node with IP: ");
+      PRINTF("Creating new node with IP: ");
       PRINT6ADDR(network[node_index].ip);
-    // ze  PRINTF(" (%x)\n", id);
+       PRINTF(" (%x)\n", id);
       return &network[node_index++];
     }
   }
- // ze PRINTF("No entry in the routing table matching ID %x!\n", id);
+  PRINTF("No entry in the routing table matching ID %x!\n", id);
   return NULL;
 }
 
@@ -344,7 +344,7 @@ print_graph()
     if(!network[i].visited)
       print_subtree(&network[i], 0);
   }
-//  printf("-----------------------\n");
+ printf("-----------------------\n");
 }
 
 void
@@ -371,15 +371,15 @@ tcpip_handler()
   appdata = (uint8_t *) uip_appdata;
   MAPPER_GET_PACKETDATA(src_id, appdata);
   
-//  PRINTF("Source ID: %x\n", src_id);
+  PRINTF("Source ID: %x\n", src_id);
 
   id = add_node(src_id);
   if(id == NULL)
     return;
 
- /* ze PRINTF("Found node ");
+  PRINTF("Found node ");
   PRINT6ADDR(id->ip);
-  PRINTF("\n");*/
+  PRINTF("\n");
 
   // RPL Instance ID | DODAG ID | DAG Version | Timestamp | 
 
@@ -692,8 +692,7 @@ int status = 0;
 
                      if(network[i].etcob.obj.etx < network[i].neighbor[network[i].parent_id].node->etcob.obj.etx)
                       {
-                         PRINTF("LAP");
-                    network[i].status |= IDS_TEMP_ERROR_ETX;
+                                network[i].status |= IDS_TEMP_ERROR_ETX;
           			network[i].neighbor[network[i].parent_id].node->status |= IDS_TEMP_ERROR_ETX;
                        }
 
@@ -952,6 +951,8 @@ PROCESS_THREAD(mapper, ev, data)
   static int init = 1;
 
   PROCESS_BEGIN();
+
+ // powertrace_start(CLOCK_SECOND * 2); 
 
 //  ids_serial_init();
 

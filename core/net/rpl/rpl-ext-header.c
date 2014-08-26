@@ -101,11 +101,11 @@ rpl_verify_header(int uip_ext_opt_offset)
   }
 
   PRINTF("RPL: Packet going %s\n", down == 1 ? "down" : "up");
-  printf("RPL: Packet going %s\n", down == 1 ? "down" : "up");
+  //printf("RPL: Packet going %s\n", down == 1 ? "down" : "up");
 
   sender_closer = UIP_EXT_HDR_OPT_RPL_BUF->senderrank < instance->current_dag->rank;
 
-   printf("UIP_EXT_HDR_OPT_RPL_BUF->senderrank %u ,instance->current_dag->rank %u");
+  // printf("UIP_EXT_HDR_OPT_RPL_BUF->senderrank %u ,instance->current_dag->rank %u");
   PRINTF("UIP_EXT_HDR_OPT_RPL_BUF->senderrank %u ,instance->current_dag->rank %u,sender_closer %u", UIP_EXT_HDR_OPT_RPL_BUF->senderrank,instance->current_dag->rank,sender_closer);
    if((down && !sender_closer) || (!down && sender_closer)) {
    PRINTF("RPL: Loop detected - senderrank: %d my-rank: %d sender_closer: %d\n",

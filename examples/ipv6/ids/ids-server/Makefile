@@ -1,5 +1,6 @@
 CONTIKI = ../../../..
 APPS = ids-server
+#APPS+=powertrace
 CONTIKI_PROJECT = network-mapper
 
 WITH_UIP6=1
