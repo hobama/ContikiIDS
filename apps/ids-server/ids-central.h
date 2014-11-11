@@ -3,8 +3,8 @@
 
 #include "ids-common.h"
 
-#define NETWORK_NODES 4
-#define NETWORK_DENSITY 4 // The number of neighbors for each node
+#define NETWORK_NODES 8
+#define NETWORK_DENSITY 3 // The number of neighbors for each node
 #define MAPPING_RECENT_WINDOW 1 // Acceptably old information, in MAPPING_INTERVAL units
 
 #define MAPPING_INTERVAL 120 * CLOCK_SECOND // Time between new mapping atempts
@@ -13,7 +13,7 @@
 
 extern uip_ds6_route_t uip_ds6_routing_table[];
 extern rpl_instance_t instance_table[];
-
+extern rpl_stats_t rpl_stats;
 struct ids_host_info {
   uip_ipaddr_t addr;
   int8_t outstanding_echos;

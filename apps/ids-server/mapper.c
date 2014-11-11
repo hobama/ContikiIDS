@@ -33,7 +33,7 @@
 #include "net/uip.h"
 #include "net/rpl/rpl.h"
 #include "net/rime/rimeaddr.h"
-
+#include "net/rpl/rpl-private.h"
 #include "ids-central.h"
 
 #include "net/netstack.h"
@@ -41,7 +41,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-
 //#define DEBUG DEBUG_PRINT
 #define DEBUG DEBUG_NONE
 #include "net/uip-debug.h"
@@ -58,6 +57,8 @@
 #define IDS_RANK_ERROR 0x02
 #define IDS_RELATIVE_ERROR 0x04
 #define IDS_TEMP_ERROR_ETX 0x05
+
+#include "simple-energest.h"
 //#include "powertrace.h"
 /**
  * Connection for incoming IDS information packets
@@ -313,8 +314,7 @@ print_subtree(struct Node *node, int depth)
 
   //print_routing_table();
   printf("    {");
-//  printf("dharmini");
-
+ 
   for(i = 0; i < node->neighbors; ++i) {
     uip_debug_ipaddr_print(node->neighbor[i].node->ip);
     printf("( r :%d,  e: %d )" , node->neighbor[i].rank,node->neighbor[i].node->etcob.obj.etx);
@@ -370,7 +370,7 @@ tcpip_handler()
 
   appdata = (uint8_t *) uip_appdata;
   MAPPER_GET_PACKETDATA(src_id, appdata);
-  
+ // printf("Starshere \n");
   PRINTF("Source ID: %x\n", src_id);
 
   id = add_node(src_id);
@@ -522,7 +522,7 @@ map_network()
     MAPPER_ADD_PACKETDATA(data_p, timestamp);
    
     
-
+   // printf("endshere \n");
     PRINTF("sending data to: %2d ", working_host);
     PRINT6ADDR(&uip_ds6_routing_table[working_host].ipaddr);
     PRINTF("\n");
@@ -617,18 +617,22 @@ int status = 0;
  //zebra
    
     
-  /*  PRINTF("node address");
+   /* PRINTF("node address \n");
     uip_debug_ipaddr_print(network[i].ip);
     PRINTF("\n");
     
-    PRINTF("node  parent address");
+    PRINTF("node  parent address \n");
     uip_debug_ipaddr_print(network[i].neighbor[network[i].parent_id].node->ip);
     PRINTF("\n");
     
-    PRINTF("node  neighbor");
-    uip_debug_ipaddr_print(network[i].neighbor[i].node->ip);
+    PRINTF("node  etx \n");
+    PRINTF(" network[i].etcob.obj.etx %d", network[i].etcob.obj.etx);
+    PRINTF("\n");
+    
+    PRINTF("node  parent etx \n");
+    PRINTF(" network[i].neighbor[network[i].parent_id].node->etcob.obj.etx %d", network[i].neighbor[network[i].parent_id].node->etcob.obj.etx);
     PRINTF("\n");*/
-
+   
     if(network[i].etcob.obj.etx ==0)
        {
         if(network[i].neighbor[network[i].parent_id].etcob.obj.etx == 0)        
@@ -660,46 +664,34 @@ int status = 0;
                     /*  if((uint8_t) network[i].id == 1)
                       continue;*/
                         
-		                 
-                      PRINTF("inner neighbors \n ");
-                      PRINTF("neighbors of i %d neighbors of j %d  i %d  j %d \n",network[i].neighbors,network[j].neighbors,i,j);
-
+		     /*            
                       PRINTF("network[i].ip");
          	      PRINT6ADDR(network[i].ip);
  		      PRINTF("\n");
-                      
                       PRINTF("network[i].etcob.obj.etx %u \n",network[i].etcob.obj.etx);
 
                       PRINTF("network[j].ip");
          	      PRINT6ADDR(network[j].ip);
  		      PRINTF("\n");
-                       
-                      PRINTF("network[j].etcob.obj.etx %u \n",network[j].etcob.obj.etx);
+                      PRINTF("network[j].etcob.obj.etx %u \n",network[j].etcob.obj.etx);*/
                       
-                                          
-                      PRINTF("network[i].neighbor[network[i].parent_id].node->ip");
-                      PRINT6ADDR(network[i].neighbor[network[i].parent_id].node->ip);
-                      PRINTF("\n");
-		      
+                     if(network[i].etcob.obj.etx <= network[i].neighbor[network[i].parent_id].node->etcob.obj.etx )
                       
-       
-                      PRINTF("Parent of j network[j].neighbor[network[j].parent_id].node->ip");
-                      PRINT6ADDR(network[j].neighbor[network[j].parent_id].node->ip);
-                      PRINTF("\n");
+			{
+                                
+                                printf("im here %d \n",check_child_parent_relation());
+                               
 
-                      PRINTF("network[i].etcob.obj.etx %u \n",network[i].etcob.obj.etx);
-                      PRINTF("network[i].neighbor[network[i].parent_id].node->etcob.obj.etx %u \n",network[i].neighbor[network[i].parent_id].node->etcob.obj.etx);
-
-                     if(network[i].etcob.obj.etx < network[i].neighbor[network[i].parent_id].node->etcob.obj.etx)
-                      {
+			if(!(check_child_parent_relation()))
+  			{
+                                
                                 network[i].status |= IDS_TEMP_ERROR_ETX;
           			network[i].neighbor[network[i].parent_id].node->status |= IDS_TEMP_ERROR_ETX;
+                        }
                        }
 
 
-
- 
-                          
+                      
                 }
 
 
@@ -715,9 +707,11 @@ int status = 0;
      
     if((network[i].status & (IDS_TEMP_ERROR_ETX | IDS_RELATIVE_ERROR)) ==
         (IDS_TEMP_ERROR_ETX | IDS_RELATIVE_ERROR)) {
-      if (status == 0)
+      if (status == 0){
        printf("The following nodes(child & Parent) has advertised incorrect link advertisements:\n");
-
+	simple_energest_print();
+	printf("2 min mark\n");
+	}
       uip_debug_ipaddr_print(network[i].ip);
       printf(" (%u)\n", network[i].etcob.obj.etx);
       status = 1;
@@ -739,7 +733,28 @@ int status = 0;
 
     }
 
+/*int check_rpl_stats()
+{
 
+int status = 0;
+  int i,j,;
+
+  for(i = 1; i < node_index; ++i) {
+    if (!valid_node(&network[i]))
+      continue;
+
+                      ("RPL STATS  %u \n",RPL_STAT(rpl_stats.mem_overflows));
+                      PRINTF("RPL STATS1 %u \n",RPL_STAT(rpl_stats.local_repairs));
+                      PRINTF("RPL STATS2 %u \n",RPL_STAT(rpl_stats.global_repairs));
+		      PRINTF("RPL STATS3 %u \n",RPL_STAT(rpl_stats.malformed_msgs));
+                      PRINTF("RPL STATS4 %u \n",RPL_STAT(rpl_stats.resets));
+                      PRINTF("RPL STATS5 %u \n",RPL_STAT(rpl_stats.parent_switch));
+
+
+
+
+
+}*/
 
 /**
  * This will find any missing nodes
@@ -790,32 +805,9 @@ int correct_rank_inconsistencies(void) {
     // If we haven't gotten any information for this node, ignore it
     if (!valid_node(&network[i]))
       continue;
-//katara
     for (j = 0; j < network[i].neighbors; ++j) {
          
-      /*   
-         PRINTF("neighbors %d i %d  j %d \n",network[i].neighbors,i,j);
-         
-         PRINTF("network[i].neighbor[j].node->ip");
-         PRINT6ADDR(network[i].neighbor[j].node->ip);
-         PRINTF("\n");
-
-          PRINTF("network[i].ip");
-          PRINT6ADDR(network[i].ip);
- 	  PRINTF("\n");*/
-
-	/* PRINTF("(uint8_t) network[i].id %d (uint8_t) network[i].neighbor[j].node->id %d " , (uint8_t) network[i].id, (uint8_t) network[i].neighbor[j].node->id);
-
-
-         PRINTF("network[i].neighbor[j].rank %d network[i].neighbor[j].node->rank %d \n",network[i].neighbor[j].rank,network[i].neighbor[j].node->rank);
-         
-          PRINTF("network[i].neighbor[j].etcob.obj.etx %d network[i].neighbor[j].node->etcob.obj.etx %d i %d j %d\n",network[i].neighbor[j].etcob.obj.etx,network[i].neighbor[j].node->etcob.obj.etx,i,j);*/
-         
-
-     
-       // PRINT6ADDR(network[0]);
-       // PRINTF("\n");
-      // If we haven't gotten any information from this neighbor, ignore it*/
+    // If we haven't gotten any information from this neighbor, ignore it*/
      
      if (!valid_node(network[i].neighbor[j].node) ||
           network[i].neighbor[j].node == &network[0])
@@ -823,13 +815,9 @@ int correct_rank_inconsistencies(void) {
 
       // We have an inconsistency
 
-      int diff;//,diff_etx1,diff_etx2;     
+      int diff;
        
-     // diff_etx1= network[i].neighbor[j].node->etcob.obj.etx-network[i].neighbor[j].etcob.obj.etx;
-      // diff_etx2=network[i].neighbor[j].etcob.obj.etx- network[i].etcob.obj.etx;
-         
-     // PRINTF("diff_etx1 %u diff_etx2 %u network[i].etcob.obj.etx %u \n ", diff_etx1,diff_etx2,network[i].etcob.obj.etx);
-      if (network[i].neighbor[j].node->rank > network[i].neighbor[j].rank)
+       if (network[i].neighbor[j].node->rank > network[i].neighbor[j].rank)
        {
         diff = network[i].neighbor[j].node->rank - network[i].neighbor[j].rank;
         
@@ -837,8 +825,6 @@ int correct_rank_inconsistencies(void) {
       else
         diff = network[i].neighbor[j].rank - network[i].neighbor[j].node->rank ;
         
-       /*PRINTF("network[i].neighbor[j].node->rank %d network[i].neighbor[j].rank %d  diff of the nodes  %d \n",network[i].neighbor[j].node->rank,network[i].neighbor[j].rank, diff);
-    //   PRINTF("(uint8_t) network[i].id %d network[i].neighbor[j].rank %d network[i].neighbor[j].node->rank %d (uint8_t) network[i].neighbor[j].node->id %d \n",(uint8_t) network[i].id, network[i].neighbor[j].rank, network[i].neighbor[j].node->rank,(uint8_t) network[i].neighbor[j].node->id);*/
       //  If the absolute difference is > 20% of the ranks averages.
       // (r1+r2)/2*0.2 => (r1+r2)/10
       if (diff > (network[i].neighbor[j].rank + network[i].neighbor[j].node->rank)/10) {
@@ -848,8 +834,7 @@ int correct_rank_inconsistencies(void) {
 
         network[i].visited++;
         network[i].neighbor[j].node->visited++;
-       
-         
+    
       }
     }
   }
@@ -932,6 +917,7 @@ detect_inconsistencies()
   check_child_parent_relation();
   missing_ids_info();
   check_child_parent_etx_relation();
+ // check_rpl_stats();
 }
 
 /*void 
@@ -952,10 +938,10 @@ PROCESS_THREAD(mapper, ev, data)
 
   PROCESS_BEGIN();
 
- // powertrace_start(CLOCK_SECOND * 2); 
+// powertrace_start(CLOCK_SECOND * 2); 
 
 //  ids_serial_init();
-
+ simple_energest_start();
   PROCESS_PAUSE();
 
   memset(host, 0, sizeof(host));
@@ -993,6 +979,7 @@ PROCESS_THREAD(mapper, ev, data)
       tcpip_handler();
     }else if(etimer_expired(&map_timer)) {
       // Map the next DAG.
+	
       if(working_host == 0 && etimer_expired(&host_timer)) {
 #if (DEBUG) & DEBUG_PRINT
         print_graph();
@@ -1051,6 +1038,6 @@ PROCESS_THREAD(mapper, ev, data)
       }
     }
   }
-
+  
   PROCESS_END();
 }
